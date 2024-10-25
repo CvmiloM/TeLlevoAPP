@@ -19,7 +19,7 @@ export class SignUpPage {
   usernameError: string = '';
   passwordError: string = '';
 
-  constructor(private storageService: StorageService, private router: Router) { }
+  constructor(private storageService: StorageService, private router: Router) {}
 
   // Validar todos los campos
   Validar() {
@@ -29,6 +29,14 @@ export class SignUpPage {
     this.passwordError = this.password.length >= 8 ? '' : 'La contraseña debe tener al menos 8 caracteres.';
 
     this.canProceed = !this.nombreError && !this.apellidoError && !this.usernameError && !this.passwordError;
+  }
+  
+  async presentToast(message: string) {
+    const toast = document.createElement('ion-toast');
+    toast.message = message;
+    toast.duration = 2000;
+    document.body.appendChild(toast);
+    return toast.present();
   }
 
   // Registrar el usuario
@@ -41,8 +49,24 @@ export class SignUpPage {
         password: this.password.trim()  // Aseguramos que no haya espacios en blanco al principio/final
       };
 
-      // Guardar el usuario en Ionic Storage
-      await this.storageService.setItem('usuario', nuevoUsuario);
+      // Obtener la lista de usuarios existente desde Ionic Storage
+      let usuarios = await this.storageService.getItem('usuarios') || [];
+
+      // Comprobar si el usuario ya existe
+      const usuarioExistente = usuarios.find((user: any) => user.username === this.username);
+      if (usuarioExistente) {
+        console.log('El usuario ya está registrado.');
+        this.presentToast('El usuario ya está registrado.');
+        return;
+      }
+
+      // Agregar el nuevo usuario a la lista
+      usuarios.push(nuevoUsuario);
+
+      // Guardar la lista de usuarios actualizada en Ionic Storage
+      await this.storageService.setItem('usuarios', usuarios);
+
+      console.log('Usuario registrado:', nuevoUsuario);
 
       // Navegar a la página de inicio de sesión
       this.router.navigate(['/home']);
@@ -50,4 +74,5 @@ export class SignUpPage {
       console.log('Por favor completa todos los campos correctamente.');
     }
   }
+
 }

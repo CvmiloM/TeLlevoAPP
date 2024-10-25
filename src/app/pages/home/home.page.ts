@@ -16,18 +16,27 @@ export class HomePage {
   constructor(private storageService: StorageService, private router: Router) {}
 
   async onSubmit() {
-    // Obtener el usuario guardado en Storage
-    const usuario = await this.storageService.getItem('usuario');
+    // Obtener la lista de usuarios guardados en Storage
+    const usuarios = await this.storageService.getItem('usuarios') || [];
 
-    if (usuario) {
-      // Validar credenciales con el username y la contraseña
+    if (usuarios.length > 0) {
+      // Validar credenciales con el username y la contraseña ingresados
       const usernameIngresado = this.usr.username.trim();
       const passwordIngresado = this.usr.password.trim();
 
-      // Comparar credenciales
-      if (usernameIngresado === usuario.username && passwordIngresado === usuario.password) {
+      // Buscar un usuario que coincida con las credenciales ingresadas
+      const usuarioEncontrado = usuarios.find((user: any) => 
+        user.username === usernameIngresado && user.password === passwordIngresado
+      );
+
+      if (usuarioEncontrado) {
         console.log('Inicio de sesión exitoso');
-        this.router.navigate(['/role-selection']);  // Redirigir a la página de selección de rol
+        
+        // Guardar el usuario actual en el storage (opcional, para usarlo en otras páginas)
+        await this.storageService.setItem('usuario_actual', usuarioEncontrado);
+
+        // Redirigir a la página de selección de rol
+        this.router.navigate(['/role-selection']);
       } else {
         console.log('Credenciales incorrectas');
       }
