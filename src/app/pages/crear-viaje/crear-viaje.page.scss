@@ -32,4 +32,11 @@ ion-content {
     margin: 10px 0;
     text-align: center;
   }
-  
+  /* crear-viaje.page.scss */
+.map-container {
+  height: 300px;
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+}

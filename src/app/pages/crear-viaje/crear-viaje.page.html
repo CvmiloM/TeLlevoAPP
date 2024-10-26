@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="dark">
-
+    <ion-title>Crear Viaje</ion-title>
     <ion-buttons slot="end">
       <ion-button routerLink="/perfil">
         <ion-icon name="person-circle-outline"></ion-icon>
@@ -36,17 +36,17 @@
         <ion-input type="number" min="0" placeholder="Ejemplo: 1500" [(ngModel)]="costo"></ion-input>
       </ion-item>
 
+      <!-- Contenedor del mapa -->
       <div class="map-container">
-        <div class="map-placeholder">
-          <p>Mapa Interactivo (Selecciona tu destino)</p>
-          <ion-icon name="map-outline" style="font-size: 50px; color: #ffffff;"></ion-icon>
-        </div>
+        <div id="mapa" style="height: 300px;"></div>
       </div>
 
+      <!-- Mensaje de estado si faltan campos -->
       <div class="status-message" *ngIf="!isComplete()">
         <ion-label color="danger">Complete todos los campos para crear el viaje.</ion-label>
       </div>
 
+      <!-- Botones de acción -->
       <div class="action-buttons">
         <ion-button expand="block" color="tertiary" (click)="crearViaje()" [disabled]="!isComplete()">
           Confirmar Viaje
