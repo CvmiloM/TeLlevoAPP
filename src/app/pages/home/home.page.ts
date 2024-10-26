@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { StorageService } from '../../services/storage.service'; // Asegúrate de que la ruta sea correcta
+import { AuthService } from '../../services/auth.service';       // Servicio de Autenticación
+import { StorageService } from '../../services/storage.service'; // Servicio de Storage
 
 @Component({
   selector: 'app-home',
@@ -8,40 +9,36 @@ import { StorageService } from '../../services/storage.service'; // Asegúrate d
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage {
-  usr = {
-    username: '',
-    password: ''
-  };
+  email: string = '';
+  password: string = '';
 
-  constructor(private storageService: StorageService, private router: Router) {}
+  constructor(private authService: AuthService, private storageService: StorageService, private router: Router) {}
 
   async onSubmit() {
-    // Obtener la lista de usuarios guardados en Storage
-    const usuarios = await this.storageService.getItem('usuarios') || [];
+    try {
+      // Iniciar sesión en Firebase Authentication
+      const credenciales = await this.authService.login(this.email.trim(), this.password.trim());
 
-    if (usuarios.length > 0) {
-      // Validar credenciales con el username y la contraseña ingresados
-      const usernameIngresado = this.usr.username.trim();
-      const passwordIngresado = this.usr.password.trim();
+      // Guardar sólo datos simples como uid, email en el storage
+      const usuarioInfo = {
+        uid: credenciales.user?.uid,
+        email: credenciales.user?.email
+      };
 
-      // Buscar un usuario que coincida con las credenciales ingresadas
-      const usuarioEncontrado = usuarios.find((user: any) => 
-        user.username === usernameIngresado && user.password === passwordIngresado
-      );
+      // Guardar el usuario actual en el storage
+      await this.storageService.setItem('usuario_actual', usuarioInfo);
 
-      if (usuarioEncontrado) {
-        console.log('Inicio de sesión exitoso');
-        
-        // Guardar el usuario actual en el storage (opcional, para usarlo en otras páginas)
-        await this.storageService.setItem('usuario_actual', usuarioEncontrado);
-
-        // Redirigir a la página de selección de rol
-        this.router.navigate(['/role-selection']);
+      // Redirigir a la página de selección de rol
+      this.router.navigate(['/role-selection']);
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+    
+      // Verificar si el error tiene la propiedad 'message'
+      if (error instanceof Error) {
+        alert(error.message);  // Mostrar el mensaje del error
       } else {
-        console.log('Credenciales incorrectas');
+        alert('Ocurrió un error desconocido.');
       }
-    } else {
-      console.log('No hay usuarios registrados');
     }
   }
 }

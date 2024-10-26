@@ -3,17 +3,25 @@
     <h2 class="title">Inicia Sesión</h2>
     <form #formulario="ngForm" (ngSubmit)="onSubmit()">
       <ion-item lines="none">
-        <ion-icon name="person" slot="start"></ion-icon>
-        <ion-input label="Nombre de Usuario" required type="text"
+        <ion-icon name="mail" slot="start"></ion-icon>
+        <ion-input 
+          label="Correo Electrónico" 
+          required 
+          type="email"
           labelPlacement="floating"
-          [(ngModel)]="usr.username" name="username"
-          placeholder="Nombre de usuario"></ion-input>
+          [(ngModel)]="email" 
+          name="email"
+          placeholder="Correo Electrónico"></ion-input>
       </ion-item>
       <ion-item lines="none">
         <ion-icon name="lock-closed" slot="start"></ion-icon>
-        <ion-input label="Contraseña" required type="password"
+        <ion-input 
+          label="Contraseña" 
+          required 
+          type="password"
           labelPlacement="floating" 
-          [(ngModel)]="usr.password" name="password"
+          [(ngModel)]="password" 
+          name="password"
           placeholder="******"></ion-input>
       </ion-item>
       <ion-button expand="block" fill="clear" type="submit" [disabled]="formulario.invalid">

@@ -15,10 +15,10 @@
     <ion-text color="danger" *ngIf="apellidoError">{{ apellidoError }}</ion-text>
 
     <ion-item lines="none">
-      <ion-icon name="person" slot="start"></ion-icon>
-      <ion-input placeholder="Ingresa tu nombre de usuario" [(ngModel)]="username" (ionInput)="Validar()"></ion-input>
+      <ion-icon name="mail" slot="start"></ion-icon>
+      <ion-input placeholder="Ingresa tu correo electrónico" [(ngModel)]="email" (ionInput)="Validar()" type="email"></ion-input>
     </ion-item>
-    <ion-text color="danger" *ngIf="usernameError">{{ usernameError }}</ion-text>
+    <ion-text color="danger" *ngIf="emailError">{{ emailError }}</ion-text>
 
     <ion-item lines="none">
       <ion-icon name="lock-closed" slot="start"></ion-icon>
