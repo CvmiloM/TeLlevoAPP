@@ -22,11 +22,14 @@ export class CrearViajePage implements OnInit, OnDestroy {
   suggestions: any[] = [];
   viajeId: string = '';
   conductorId: string = 'conductor-123'; // ID de ejemplo para el conductor
+  userExperience: number = 0;
+  userLevel: number = 1;
+  experienceNeededForNextLevel: number = 10;
 
   constructor(
     private db: AngularFireDatabase,
-    private alertController: AlertController, // Inyecta el AlertController
-    private router: Router // Inyecta el Router para redirección
+    private alertController: AlertController,
+    private router: Router
   ) {}
 
   async ngOnInit() {
@@ -42,13 +45,24 @@ export class CrearViajePage implements OnInit, OnDestroy {
       zoom: 12,
     });
 
-    new mapboxgl.Marker()
-      .setLngLat(this.ubicacionInicial)
-      .addTo(this.map);
+    new mapboxgl.Marker().setLngLat(this.ubicacionInicial).addTo(this.map);
+
+    this.loadUserExperience();
   }
 
   ngOnDestroy() {
     this.map.remove();
+  }
+
+  loadUserExperience() {
+    // Cargar nivel y experiencia del conductor desde la base de datos
+    this.db.object(`usuarios/${this.conductorId}/profile`).valueChanges().subscribe((profile: any) => {
+      if (profile) {
+        this.userExperience = profile.experience || 0;
+        this.userLevel = profile.level || 1;
+        console.log("Nivel y experiencia cargados:", this.userLevel, this.userExperience);
+      }
+    });
   }
 
   buscarDestino() {
@@ -133,8 +147,8 @@ export class CrearViajePage implements OnInit, OnDestroy {
       buttons: ['OK']
     });
     await alert.present();
-    await alert.onDidDismiss(); // Espera a que se cierre la alerta antes de redirigir
-    this.router.navigate(['/conductor']); // Redirige al conductor
+    await alert.onDidDismiss();
+    this.router.navigate(['/conductor']);
   }
 
   async crearViaje() {
@@ -158,10 +172,29 @@ export class CrearViajePage implements OnInit, OnDestroy {
       this.viajeId = viajeRef.key || '';
       this.db.object(`viajesActivos/${this.conductorId}`).set({ id: this.viajeId });
 
+      // Actualizar experiencia y nivel
+      this.updateExperience(5); // Incrementa la experiencia del conductor en 5 puntos
+
       console.log('Viaje creado y guardado en Firebase:', viajeData);
-      this.mostrarAlerta(); // Muestra la alerta y redirige al conductor
+      this.mostrarAlerta();
     } else {
       console.log('Por favor, completa todos los campos.');
     }
+  }
+
+  updateExperience(points: number) {
+    this.userExperience += points;
+    console.log("Experiencia después de incrementar:", this.userExperience);
+    if (this.userExperience >= this.experienceNeededForNextLevel) {
+      this.userLevel++;
+      this.userExperience -= this.experienceNeededForNextLevel;
+      this.experienceNeededForNextLevel += 10;
+      console.log("Subiendo nivel:", this.userLevel, "Nueva experiencia:", this.userExperience);
+    }
+    // Guardar experiencia y nivel en Realtime Database
+    this.db.object(`usuarios/${this.conductorId}/profile`).update({
+      level: this.userLevel,
+      experience: this.userExperience
+    });
   }
 }

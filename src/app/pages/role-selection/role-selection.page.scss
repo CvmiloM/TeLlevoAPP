@@ -1,79 +1,202 @@
+/* Contenedor principal */
 .role-selection-container {
+  text-align: center;
+  color: #f1f1f1;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  text-align: center;
-  color: #ffffff;
+  animation: fadeIn 0.8s ease-in-out;
+  max-width: 100%;
+  margin: auto;
+  gap: 1rem;
 }
 
-.title {
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bienvenida */
+h1 {
   font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: #f2f2f2;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: #ffd700; /* Color dorado */
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.6s ease-in-out;
 }
 
+/* Estilos de las tarjetas */
 .role-card {
   width: 90%;
-  max-width: 400px;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-}
-
-.card-title {
+  max-width: 350px;
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin: 0.5rem 0;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.4), -4px -4px 8px rgba(255, 255, 255, 0.05);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: #ffffff;
-}
-
-.card-icon {
-  margin-right: 0.5rem;
-}
-
-.map-container {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
   position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 20px 0;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.map-img {
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.role-card:hover {
+  transform: scale(1.05);
+  background-color: #333333;
 }
 
-.car-info {
-  background-color: rgba(0, 0, 0, 0.7);
+/* Bordes de colores en las tarjetas */
+.conductor-card {
+  border-left: 5px solid #4caf50;
+}
+
+.pasajero-card {
+  border-left: 5px solid #6a1b9a;
+}
+
+.role-card ion-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
   color: #ffffff;
-  padding: 10px;
-  border-radius: 10px;
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  text-align: left;
+  animation: popIn 0.5s ease-in-out;
 }
 
-.car-info h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.2rem;
-  color: #00ff00;
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.car-info p {
-  margin: 2px 0;
-  font-size: 0.9rem;
+.role-card h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 0.3rem;
 }
 
-ion-button {
-  margin-top: 20px;
+.role-card p {
+  font-size: 1rem;
+  margin-bottom: 1.2rem;
+  color: #dcdcdc;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Botones dentro de las tarjetas */
+.role-card ion-button {
+  --border-radius: 8px;
+  font-weight: bold;
   width: 100%;
-  max-width: 320px;
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease;
+  color: #ffffff;
+  font-size: 0.9rem;
+  padding: 0.6rem;
+  animation: slideIn 0.5s ease-in-out;
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.role-card ion-button:hover {
+  filter: brightness(1.1);
+}
+
+/* Sección de ubicación */
+.location-section {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #dcdcdc;
+  width: 90%;
+  max-width: 300px;
+  background-color: #1e1e1e;
+  padding: 0.8rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeInMap 0.8s ease-in-out;
+}
+
+@keyframes fadeInMap {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.location-section h3 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #ffd700;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+.location-section ion-icon {
+  font-size: 2rem;
+  color: #ffd700;
+}
+
+/* Mapa */
+#map {
+  height: 250px;
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeInMap 0.8s ease-in-out;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .role-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .role-card p {
+    font-size: 0.9rem;
+  }
+
+  .role-card ion-icon {
+    font-size: 2rem;
+  }
+
+  .location-section h3 {
+    font-size: 1rem;
+  }
+
+  #map {
+    height: 200px;
+  }
 }

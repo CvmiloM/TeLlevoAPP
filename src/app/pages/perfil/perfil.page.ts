@@ -1,6 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { StorageService } from '../../services/storage.service'; // Importar el servicio de Storage
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-perfil',
@@ -8,73 +12,92 @@ import { Router } from '@angular/router';
   styleUrls: ['./perfil.page.scss'],
 })
 export class PerfilPage implements OnInit {
+  userId: string | null = null;
+  userEmail: string | null = null;
+  profileImageUrl: Observable<string | null> | null = null;
+  userLevel: number = 1;
+  userExperience: number = 0;
+  experienceNeededForNextLevel: number = 10;
 
-  usuario: any = {};  // Variable para almacenar los datos del usuario
-  imagenPerfil: string | null = null;  // Variable para almacenar la imagen en base64
+  constructor(
+    private afAuth: AngularFireAuth,
+    private storage: AngularFireStorage,
+    private db: AngularFireDatabase,
+    private navCtrl: NavController
+  ) {}
 
-  @ViewChild('fileInput') fileInput!: ElementRef;  // Referencia al input de archivo
+  ngOnInit() {
+    this.afAuth.authState.subscribe((user) => {
+      if (user) {
+        this.userId = user.uid;
+        this.userEmail = user.email;
+        this.loadProfileImage();
+        this.loadUserLevelAndExperience();
+      }
+    });
+  }
 
-  constructor(private storageService: StorageService, private router: Router) { }
-
-  async ngOnInit() {
-    // Obtener los datos del usuario desde Ionic Storage
-    const datosUsuario = await this.storageService.getItem('usuario');
-    if (datosUsuario) {
-      this.usuario = datosUsuario;
-      this.imagenPerfil = datosUsuario.imagen || null;  // Obtener la imagen si está guardada
-
-      console.log('Datos del usuario:', this.usuario); // Verificar si se cargan los datos correctamente
-    } else {
-      console.log('No se encontró un usuario registrado');
+  loadProfileImage() {
+    if (this.userId) {
+      const filePath = `profile_images/${this.userId}`;
+      const ref = this.storage.ref(filePath);
+      this.profileImageUrl = ref.getDownloadURL();
     }
   }
 
-  // Disparar el input de archivo al hacer clic en la imagen
-  triggerFileInput() {
-    this.fileInput.nativeElement.click();
+  loadUserLevelAndExperience() {
+    if (this.userId) {
+      this.db.object(`users/${this.userId}/profile`).valueChanges().subscribe((profile: any) => {
+        if (profile) {
+          this.userLevel = profile.nivel || 1;
+          this.userExperience = profile.experiencia || 0;
+          console.log("Datos cargados desde la base de datos:", profile); // Depuración
+        }
+      });
+    }
   }
 
-  // Manejar la selección de archivo (imagen)
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagenPerfil = reader.result as string;  // Convertir la imagen a base64
-      };
-      reader.readAsDataURL(file);  // Leer el archivo y convertirlo a base64
+    const file: File = event.target.files[0];
+    if (file && this.userId) {
+      const filePath = `profile_images/${this.userId}`;
+      const fileRef = this.storage.ref(filePath);
+      const task = this.storage.upload(filePath, file);
+
+      task.snapshotChanges()
+        .pipe(finalize(() => this.profileImageUrl = fileRef.getDownloadURL()))
+        .subscribe();
     }
   }
 
-  // Guardar la imagen de perfil en Ionic Storage
-  async guardarImagen() {
-    if (this.imagenPerfil) {
-      // Actualizar el usuario con la imagen
-      this.usuario.imagen = this.imagenPerfil;
+  saveProfileImageUrl() {
+    alert('Imagen de perfil actualizada correctamente.');
+  }
 
-      // Guardar el usuario con la imagen actualizada
-      await this.storageService.setItem('usuario', this.usuario);
-      console.log('Imagen de perfil guardada');
+  updateExperience(points: number) {
+    console.log("Experiencia antes de actualizar:", this.userExperience, "Nivel actual:", this.userLevel);
+    this.userExperience += points;
+    if (this.userExperience >= this.experienceNeededForNextLevel) {
+      this.userLevel++;
+      this.userExperience -= this.experienceNeededForNextLevel;
+      this.experienceNeededForNextLevel += 10;
+    }
+    console.log("Experiencia después de actualizar:", this.userExperience, "Nuevo nivel:", this.userLevel);
+    if (this.userId) {
+      this.db.object(`users/${this.userId}/profile`).update({
+        nivel: this.userLevel,
+        experiencia: this.userExperience
+      });
     }
   }
 
-  cerrarSesion() { // Limpiar el almacenamiento
-    this.router.navigate(['/home']);  // Redirigir a la página de inicio
+  logout() {
+    this.afAuth.signOut().then(() => {
+      this.navCtrl.navigateRoot('/home');
+    });
   }
 
-  editarPerfil() {
-    console.log('Editar perfil clickeado');
-  }
-
-  verHistorial() {
-    console.log('Ver historial clickeado');
-  }
-
-  ajustes() {
-    console.log('Ajustes clickeado');
-  }
-
-  seguridad() {
-    console.log('Seguridad clickeado');
+  goToRoleSelection() {
+    this.navCtrl.navigateBack('/role-selection');
   }
 }

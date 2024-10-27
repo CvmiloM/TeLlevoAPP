@@ -1,71 +1,51 @@
 <ion-header>
   <ion-toolbar color="dark">
     <ion-title>Perfil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToRoleSelection()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" color="dark">
+<ion-content color="dark">
+  <!-- Contenedor principal de perfil -->
   <div class="profile-container">
-    <!-- Sección de imagen de perfil -->
-    <div class="profile-header">
-      <ion-avatar class="profile-avatar" (click)="triggerFileInput()"> <!-- Hacer clic en el avatar para subir imagen -->
-        <img [src]="imagenPerfil || 'assets/avatar-placeholder.png'" alt="avatar"> <!-- Mostrar imagen o placeholder -->
-        <ion-icon name="create-outline" class="edit-icon" (click)="triggerFileInput()"></ion-icon> <!-- Ícono de lápiz en la esquina -->
-      </ion-avatar>
+
+    <!-- Imagen de perfil y botón de edición -->
+    <div class="profile-image-container">
+      <img *ngIf="profileImageUrl | async as imageUrl; else defaultImage" [src]="imageUrl" alt="Profile Image" />
+      <ng-template #defaultImage>
+        <img src="assets/default-profile.png" alt="Default Profile Image" />
+      </ng-template>
+      <!-- Icono de edición en la esquina inferior derecha de la imagen -->
+      <label class="edit-icon">
+        <ion-icon name="pencil-outline"></ion-icon>
+        <input type="file" (change)="onFileSelected($event)" hidden />
+      </label>
     </div>
 
-    <!-- Información del usuario -->
-    <div class="profile-info">
-      <h2 *ngIf="usuario.username">{{ usuario.username }}</h2> <!-- Mostrar el username si existe -->
-      <p *ngIf="usuario.nombre && usuario.apellido">{{ usuario.nombre }} {{ usuario.apellido }}</p> <!-- Mostrar el nombre completo si existen -->
+    <!-- Correo electrónico del usuario -->
+    <h2 class="user-email">{{ userEmail }}</h2>
+
+    <!-- Información del nivel y experiencia -->
+    <div class="user-level-info">
+      <h3>Nivel {{ userLevel }}</h3>
+      <div class="experience-bar">
+        <div class="experience-progress" [style.width.%]="(userExperience / experienceNeededForNextLevel) * 100"></div>
+      </div>
+      <p>Experiencia: {{ userExperience }} / {{ experienceNeededForNextLevel }}</p>
     </div>
 
-    <!-- Input de archivo oculto para seleccionar la imagen -->
-    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display:none;" />
-
-    <!-- Botón para guardar la imagen de perfil -->
-    <ion-button expand="block" fill="solid" color="success" (click)="guardarImagen()">
-      <ion-icon name="save-outline" slot="start"></ion-icon>
-      Guardar Imagen de Perfil
-    </ion-button>
-
-    <!-- Sección de botones de acción -->
-    <ion-grid>
-      <ion-row>
-        <ion-col size="6">
-          <ion-button expand="block" fill="outline" color="primary" (click)="editarPerfil()">
-            <ion-icon name="create-outline" slot="start"></ion-icon>
-            Editar Perfil
-          </ion-button>
-        </ion-col>
-        <ion-col size="6">
-          <ion-button expand="block" fill="outline" color="secondary" (click)="verHistorial()">
-            <ion-icon name="time-outline" slot="start"></ion-icon>
-            Historial
-          </ion-button>
-        </ion-col>
-      </ion-row>
-
-      <ion-row>
-        <ion-col size="6">
-          <ion-button expand="block" fill="outline" color="tertiary" (click)="ajustes()">
-            <ion-icon name="settings-outline" slot="start"></ion-icon>
-            Ajustes
-          </ion-button>
-        </ion-col>
-        <ion-col size="6">
-          <ion-button expand="block" fill="outline" color="danger" (click)="seguridad()">
-            <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
-            Seguridad
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-
-    <!-- Botón de cerrar sesión -->
-    <ion-button expand="block" color="danger" (click)="cerrarSesion()" class="logout-btn">
-      <ion-icon name="log-out-outline" slot="start"></ion-icon>
-      Cerrar Sesión
-    </ion-button>
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+      <ion-button expand="block" color="success" (click)="saveProfileImageUrl()">
+        Guardar Imagen de Perfil
+      </ion-button>
+      <ion-button expand="block" color="danger" (click)="logout()">
+        Cerrar Sesión
+      </ion-button>
+    </div>
   </div>
 </ion-content>
