@@ -3,6 +3,8 @@ import * as mapboxgl from 'mapbox-gl';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from '../../../environments/environment';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-crear-viaje',
@@ -21,7 +23,11 @@ export class CrearViajePage implements OnInit, OnDestroy {
   viajeId: string = '';
   conductorId: string = 'conductor-123'; // ID de ejemplo para el conductor
 
-  constructor(private db: AngularFireDatabase) {}
+  constructor(
+    private db: AngularFireDatabase,
+    private alertController: AlertController, // Inyecta el AlertController
+    private router: Router // Inyecta el Router para redirección
+  ) {}
 
   async ngOnInit() {
     (mapboxgl as any).accessToken = environment.accessToken;
@@ -120,6 +126,17 @@ export class CrearViajePage implements OnInit, OnDestroy {
     return this.destino !== '' && this.descripcion !== '' && this.asientos !== null && this.costo !== null;
   }
 
+  async mostrarAlerta() {
+    const alert = await this.alertController.create({
+      header: 'Éxito',
+      message: 'Su viaje se ha creado correctamente.',
+      buttons: ['OK']
+    });
+    await alert.present();
+    await alert.onDidDismiss(); // Espera a que se cierre la alerta antes de redirigir
+    this.router.navigate(['/conductor']); // Redirige al conductor
+  }
+
   async crearViaje() {
     if (this.isComplete()) {
       const rutaCoordenadas = await this.dibujarRuta(this.destinoCoords!);
@@ -142,6 +159,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
       this.db.object(`viajesActivos/${this.conductorId}`).set({ id: this.viajeId });
 
       console.log('Viaje creado y guardado en Firebase:', viajeData);
+      this.mostrarAlerta(); // Muestra la alerta y redirige al conductor
     } else {
       console.log('Por favor, completa todos los campos.');
     }

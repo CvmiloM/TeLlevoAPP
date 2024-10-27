@@ -1,76 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
-
-interface Viaje {
-  destino: string;
-  descripcion: string;
-  asientos: number;
-  costo: number;
-  fecha: Date;
-}
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AuthService } from '../../services/auth.service';; // Asegúrate de tener un servicio de autenticación
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-historial',
   templateUrl: './historial.page.html',
   styleUrls: ['./historial.page.scss'],
 })
-export class HistorialPage implements OnInit {
-  viajes: Viaje[] = [];
+export class HistorialPage implements OnInit, OnDestroy {
+  viajes: any[] = [];
+  viajesSubscription: Subscription | undefined;
+  conductorId: string | null = null;
 
-  constructor(private alertController: AlertController) {}
+  constructor(private db: AngularFireDatabase, private authService: AuthService) {}
 
   ngOnInit() {
-    // Cargar viajes de ejemplo, aquí podrías cargar los viajes desde un servicio
-    this.viajes = [
-      {
-        destino: 'Centro',
-        descripcion: 'Viaje al centro de la ciudad',
-        asientos: 2,
-        costo: 1000,
-        fecha: new Date(),
-      },
-      {
-        destino: 'Playa',
-        descripcion: 'Viaje a la playa con amigos',
-        asientos: 3,
-        costo: 1500,
-        fecha: new Date(),
-      },
-    ];
+    // Obtener el ID del conductor autenticado
+    
+
+    // Escuchar los cambios en la base de datos de "viajes" y filtrar solo los del conductor
+    this.viajesSubscription = this.db.list('viajes').valueChanges().subscribe((data: any[]) => {
+      this.viajes = data.filter(viaje => viaje.conductorId === this.conductorId);
+      console.log('Historial de viajes:', this.viajes);
+    });
   }
 
-  async verDetalles(viaje: Viaje) {
-    const alert = await this.alertController.create({
-      header: 'Detalles del Viaje',
-      message: `
-        Destino: ${viaje.destino}
-        Descripción: ${viaje.descripcion}
-        Asientos: ${viaje.asientos}
-        Costo por persona:$${viaje.costo}
-        Fecha: ${viaje.fecha.toLocaleString()}
-      `,
-      buttons: ['OK'],
-    });
-    await alert.present();
-  }
-
-  async eliminarViaje(viaje: Viaje) {
-    const alert = await this.alertController.create({
-      header: 'Confirmar',
-      message: `¿Estás seguro de que deseas eliminar el viaje a ${viaje.destino}?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          handler: () => {
-            this.viajes = this.viajes.filter(v => v !== viaje);
-          },
-        },
-      ],
-    });
-    await alert.present();
+  ngOnDestroy() {
+    if (this.viajesSubscription) {
+      this.viajesSubscription.unsubscribe();
+    }
   }
 }
