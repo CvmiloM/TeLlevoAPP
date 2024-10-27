@@ -1,47 +1,12 @@
-<ion-header>
-  <ion-toolbar color="dark">
-    <ion-title class="page-title">Pasajero</ion-title>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/perfil">
-        <ion-icon name="person-circle-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content color="dark" fullscreen>
-  <div class="content-container">
-    <ion-card class="info-card">
-      <ion-card-header>
-        <ion-card-title class="card-title">Ubicación Actual</ion-card-title>
-        <ion-card-subtitle class="card-subtitle">Selecciona tu destino</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="map-placeholder">
-          <ion-icon name="location-outline" class="map-icon"></ion-icon>
-          <p>Mapa de ubicaciones</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <div class="search-section">
-      <ion-item lines="none" class="search-item">
-        <ion-icon name="search-outline" slot="start"></ion-icon>
-        <ion-input placeholder="¿A dónde quieres ir?" [(ngModel)]="destino" clearInput></ion-input>
-      </ion-item>
-    </div>
-
-    <div *ngIf="mensaje" class="status-message">
-      <ion-label>{{ mensaje }}</ion-label>
-    </div>
-
-    <div class="action-buttons">
-      <ion-button expand="block" (click)="buscarConductores()" color="success" class="login-style-button">
-        Buscar Conductores
-      </ion-button>
-      <ion-button expand="block" routerLink="/role-selection" color="primary" class="custom-button">
-        Volver
-      </ion-button>
-    </div>
-  </div>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let viaje of viajes">
+      <ion-label>
+        <h2>Destino: {{ viaje.destino }}</h2>
+        <p>Descripción: {{ viaje.descripcion }}</p>
+        <p>Asientos disponibles: {{ viaje.asientosDisponibles }}</p>
+      </ion-label>
+      <ion-button (click)="aceptarViaje(viaje)">Aceptar Viaje</ion-button>
+    </ion-item>
+  </ion-list>
 </ion-content>

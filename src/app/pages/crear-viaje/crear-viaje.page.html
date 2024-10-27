@@ -16,24 +16,53 @@
     </ion-card-header>
 
     <ion-card-content>
+      <!-- Campo de entrada para el destino -->
       <ion-item>
         <ion-label position="stacked">Destino</ion-label>
-        <ion-input placeholder="Ingresa el destino" [(ngModel)]="destino"></ion-input>
+        <ion-input
+          placeholder="Ingresa el destino"
+          [(ngModel)]="destino"
+          (ionInput)="buscarDestino()"
+        ></ion-input>
       </ion-item>
 
+      <!-- Lista de sugerencias de destino -->
+      <ion-list *ngIf="suggestions.length > 0">
+        <ion-item
+          *ngFor="let suggestion of suggestions"
+          (click)="seleccionarDestino(suggestion.coordinates)"
+        >
+          {{ suggestion.place_name }}
+        </ion-item>
+      </ion-list>
+
+      <!-- Otros campos del formulario de viaje -->
       <ion-item>
         <ion-label position="stacked">Descripción del Viaje</ion-label>
-        <ion-textarea placeholder="Describe tu viaje brevemente" [(ngModel)]="descripcion"></ion-textarea>
+        <ion-textarea
+          placeholder="Describe tu viaje brevemente"
+          [(ngModel)]="descripcion"
+        ></ion-textarea>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Número de asientos</ion-label>
-        <ion-input type="number" min="1" placeholder="Ejemplo: 3" [(ngModel)]="asientos"></ion-input>
+        <ion-input
+          type="number"
+          min="1"
+          placeholder="Ejemplo: 3"
+          [(ngModel)]="asientos"
+        ></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Costo por persona</ion-label>
-        <ion-input type="number" min="0" placeholder="Ejemplo: 1500" [(ngModel)]="costo"></ion-input>
+        <ion-input
+          type="number"
+          min="0"
+          placeholder="Ejemplo: 1500"
+          [(ngModel)]="costo"
+        ></ion-input>
       </ion-item>
 
       <!-- Contenedor del mapa -->
@@ -43,7 +72,9 @@
 
       <!-- Mensaje de estado si faltan campos -->
       <div class="status-message" *ngIf="!isComplete()">
-        <ion-label color="danger">Complete todos los campos para crear el viaje.</ion-label>
+        <ion-label color="danger">
+          Complete todos los campos para crear el viaje.
+        </ion-label>
       </div>
 
       <!-- Botones de acción -->
