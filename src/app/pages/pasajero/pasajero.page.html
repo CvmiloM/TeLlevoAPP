@@ -1,12 +1,48 @@
 <ion-content>
-  <ion-list>
-    <ion-item *ngFor="let viaje of viajes">
-      <ion-label>
-        <h2>Destino: {{ viaje.destino }}</h2>
-        <p>Descripción: {{ viaje.descripcion }}</p>
-        <p>Asientos disponibles: {{ viaje.asientosDisponibles }}</p>
-      </ion-label>
-      <ion-button (click)="aceptarViaje(viaje)">Aceptar Viaje</ion-button>
-    </ion-item>
-  </ion-list>
+  <ion-card *ngFor="let viaje of viajes" class="viaje-card">
+    <ion-card-header>
+      <ion-card-title>{{ viaje.destino }}</ion-card-title>
+      <ion-card-subtitle>Asientos disponibles: {{ viaje.asientosDisponibles }}</ion-card-subtitle>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <ion-text color="medium">
+        <p>{{ viaje.descripcion }}</p>
+      </ion-text>
+    </ion-card-content>
+
+    <ion-footer class="viaje-footer">
+      <ion-button expand="block" color="success" (click)="aceptarViaje(viaje)">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Aceptar Viaje
+      </ion-button>
+    </ion-footer>
+  </ion-card>
 </ion-content>
+
+<style>
+  .viaje-card {
+    margin: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .viaje-footer {
+    padding: 0 16px 16px;
+  }
+
+  ion-card-title {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  ion-card-subtitle {
+    font-size: 0.9em;
+    color: #1DB954;
+  }
+
+  ion-button {
+    --border-radius: 20px;
+    --box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+</style>
