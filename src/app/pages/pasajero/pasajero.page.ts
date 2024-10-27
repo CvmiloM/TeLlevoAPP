@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Subscription } from 'rxjs';
-import { Geolocation } from '@capacitor/geolocation';
+import * as mapboxgl from 'mapbox-gl';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-pasajero',
@@ -11,19 +12,17 @@ import { Geolocation } from '@capacitor/geolocation';
 export class PasajeroPage implements OnInit, OnDestroy {
   viajes: any[] = []; // Arreglo para almacenar los viajes
   viajesSubscription: Subscription | undefined;
-  viajeId: string = ''; // ID del viaje que el pasajero acepta
+  map!: mapboxgl.Map;
+  selectedViaje: any = null;
 
   constructor(private db: AngularFireDatabase) {}
 
   ngOnInit() {
     // Escuchar los cambios en la base de datos de "viajes"
-    this.viajesSubscription = this.db
-      .list('viajes', ref => ref.orderByChild('estado').equalTo('activo'))
-      .valueChanges()
-      .subscribe((data: any[]) => {
-        this.viajes = data;
-        console.log('Viajes actualizados:', this.viajes);
-      });
+    this.viajesSubscription = this.db.list('viajes').valueChanges().subscribe((data: any[]) => {
+      this.viajes = data;
+      console.log('Viajes actualizados:', this.viajes);
+    });
   }
 
   ngOnDestroy() {
@@ -33,16 +32,51 @@ export class PasajeroPage implements OnInit, OnDestroy {
     }
   }
 
-  async aceptarViaje(viaje: any) {
-    this.viajeId = viaje.id;
-    const posicion = await Geolocation.getCurrentPosition();
-    const ubicacionPasajero = [posicion.coords.longitude, posicion.coords.latitude];
+  seleccionarViaje(viaje: any) {
+    this.selectedViaje = viaje;
+    this.mostrarRutaEnMapa(this.selectedViaje.ruta);
+    console.log('Viaje seleccionado:', viaje);
+  }
 
-    this.db.object(`viajes/${this.viajeId}/ubicacionPasajero`).set(ubicacionPasajero);
-    this.db.object(`viajes/${this.viajeId}/asientosDisponibles`).query.ref.transaction(asientosDisponibles => {
-      return asientosDisponibles > 0 ? asientosDisponibles - 1 : 0;
+  mostrarRutaEnMapa(rutaCoordenadas: [number, number][]) {
+    // Configurar el token de acceso de Mapbox
+    (mapboxgl as any).accessToken = environment.accessToken;
+
+    // Inicializar el mapa
+    this.map = new mapboxgl.Map({
+      container: 'mapa-viaje', // ID del contenedor en el HTML
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: this.selectedViaje.ubicacionInicial,
+      zoom: 12,
     });
 
-    console.log('Viaje aceptado:', viaje);
+    // Agregar la fuente de la ruta y la capa al mapa
+    this.map.on('load', () => {
+      this.map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: rutaCoordenadas,
+          },
+          properties: {}, // Se añade un objeto vacío para cumplir con el tipo
+        },
+      });
+
+      this.map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#1DB954',
+          'line-width': 4,
+        },
+      });
+    });
   }
 }

@@ -15,11 +15,11 @@ export class CrearViajePage implements OnInit, OnDestroy {
   descripcion: string = '';
   asientos: number | null = null;
   costo: number | null = null;
-  ubicacionInicial: [number, number] = [-74.5, 40]; // Coordenadas iniciales de ejemplo
+  ubicacionInicial: [number, number] = [-74.5, 40];
   destinoCoords: [number, number] | null = null;
-  suggestions: any[] = []; // Almacenará las sugerencias de búsqueda
-  viajeId: string = ''; // ID del viaje para referencia en Firebase
-  conductorId: string = 'CONDUCTOR_ID'; // ID del conductor (simulado para este ejemplo)
+  suggestions: any[] = [];
+  viajeId: string = '';
+  conductorId: string = 'conductor-123'; // ID de ejemplo para el conductor
 
   constructor(private db: AngularFireDatabase) {}
 
@@ -36,7 +36,9 @@ export class CrearViajePage implements OnInit, OnDestroy {
       zoom: 12,
     });
 
-    new mapboxgl.Marker().setLngLat(this.ubicacionInicial).addTo(this.map);
+    new mapboxgl.Marker()
+      .setLngLat(this.ubicacionInicial)
+      .addTo(this.map);
   }
 
   ngOnDestroy() {
@@ -46,12 +48,13 @@ export class CrearViajePage implements OnInit, OnDestroy {
   buscarDestino() {
     if (this.destino.length > 2) {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.destino}.json?access_token=${environment.accessToken}&autocomplete=true&limit=5`;
+
       fetch(url)
         .then(response => response.json())
         .then(data => {
           this.suggestions = data.features.map((feature: any) => ({
             place_name: feature.place_name,
-            coordinates: feature.geometry.coordinates,
+            coordinates: feature.geometry.coordinates
           }));
         })
         .catch(error => console.error('Error al buscar destino:', error));
@@ -66,54 +69,61 @@ export class CrearViajePage implements OnInit, OnDestroy {
     this.dibujarRuta(this.destinoCoords);
   }
 
-  dibujarRuta(destinoCoords: [number, number]) {
+  async dibujarRuta(destinoCoords: [number, number]): Promise<[number, number][]> {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${this.ubicacionInicial.join(',')};${destinoCoords.join(',')}?geometries=geojson&access_token=${environment.accessToken}`;
 
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        const route = data.routes[0].geometry.coordinates;
-        const geojson = {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: route,
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      const route = data.routes[0].geometry.coordinates;
+
+      const geojson = {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: route,
+        },
+        properties: {}
+      } as GeoJSON.Feature;
+
+      if (this.map.getSource('route')) {
+        (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
+      } else {
+        this.map.addSource('route', {
+          type: 'geojson',
+          data: geojson
+        });
+
+        this.map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
           },
-          properties: {},
-        } as GeoJSON.Feature;
+          paint: {
+            'line-color': '#1DB954',
+            'line-width': 5
+          }
+        });
+      }
 
-        if (this.map.getSource('route')) {
-          (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
-        } else {
-          this.map.addSource('route', {
-            type: 'geojson',
-            data: geojson,
-          });
-
-          this.map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: 'route',
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-            },
-            paint: {
-              'line-color': '#1DB954',
-              'line-width': 5,
-            },
-          });
-        }
-      })
-      .catch(error => console.error('Error al dibujar la ruta:', error));
+      return route;
+    } catch (error) {
+      console.error('Error al dibujar la ruta:', error);
+      return [];
+    }
   }
 
   isComplete(): boolean {
     return this.destino !== '' && this.descripcion !== '' && this.asientos !== null && this.costo !== null;
   }
 
-  crearViaje() {
+  async crearViaje() {
     if (this.isComplete()) {
+      const rutaCoordenadas = await this.dibujarRuta(this.destinoCoords!);
+
       const viajeData = {
         destino: this.destino,
         descripcion: this.descripcion,
@@ -121,26 +131,19 @@ export class CrearViajePage implements OnInit, OnDestroy {
         costo: this.costo,
         ubicacionInicial: this.ubicacionInicial,
         destinoCoords: this.destinoCoords,
-        asientosDisponibles: this.asientos, // Disponibilidad inicial
+        asientosDisponibles: this.asientos,
         conductorId: this.conductorId,
         estado: 'activo',
+        ruta: rutaCoordenadas,
       };
 
       const viajeRef = this.db.list('viajes').push(viajeData);
       this.viajeId = viajeRef.key || '';
-    }
-  }
+      this.db.object(`viajesActivos/${this.conductorId}`).set({ id: this.viajeId });
 
-  finalizarViaje() {
-    const viajeFinalizado = {
-      destino: this.destino,
-      descripcion: this.descripcion,
-      asientos: this.asientos,
-      costo: this.costo,
-      fecha: new Date().toISOString(),
-      estado: 'finalizado',
-    };
-    this.db.list(`historial/${this.conductorId}`).push(viajeFinalizado);
-    this.db.object(`viajes/${this.viajeId}`).remove();
+      console.log('Viaje creado y guardado en Firebase:', viajeData);
+    } else {
+      console.log('Por favor, completa todos los campos.');
+    }
   }
 }
