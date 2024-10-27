@@ -1,56 +1,79 @@
 .role-selection-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    text-align: center;
-  
-    .title {
-      color: #ffffff;
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-    }
-  
-    .map-container {
-      position: relative;
-      width: 100%;
-      max-width: 400px;
-      margin: 20px 0;
-  
-      .map-img {
-        width: 100%;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-  
-      .car-info {
-        background-color: rgba(0, 0, 0, 0.7);
-        color: #ffffff;
-        padding: 10px;
-        border-radius: 10px;
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        text-align: left;
-  
-        h3 {
-          margin: 0 0 10px 0;
-          font-size: 1.2rem;
-          color: #00ff00;
-        }
-  
-        p {
-          margin: 2px 0;
-          font-size: 0.9rem;
-        }
-      }
-    }
-  
-    ion-button {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 320px;
-    }
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  color: #ffffff;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #f2f2f2;
+}
+
+.role-card {
+  width: 90%;
+  max-width: 400px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.card-icon {
+  margin-right: 0.5rem;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.map-img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.car-info {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  text-align: left;
+}
+
+.car-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  color: #00ff00;
+}
+
+.car-info p {
+  margin: 2px 0;
+  font-size: 0.9rem;
+}
+
+ion-button {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 320px;
+}

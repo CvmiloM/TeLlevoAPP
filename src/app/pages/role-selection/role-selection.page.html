@@ -1,5 +1,6 @@
 <ion-header>
   <ion-toolbar color="dark">
+    <ion-title>Seleccionar Rol</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="goToProfile()">
         <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
@@ -13,37 +14,35 @@
     <h2 class="title">¿Qué rol deseas usar hoy?</h2>
 
     <!-- Tarjeta para Conductor -->
-    <ion-card color="success" button (click)="selectConductor()">
+    <ion-card color="success" button (click)="selectConductor()" class="role-card">
       <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="car" size="large"></ion-icon>
+        <ion-card-title class="card-title">
+          <ion-icon name="car" size="large" class="card-icon"></ion-icon>
           Conductor
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        Elige ser conductor y ofrece viajes a otros estudiantes. Podrás gestionar tus rutas y horarios.
+        <p>Elige ser conductor y ofrece viajes a otros estudiantes. Podrás gestionar tus rutas y horarios.</p>
       </ion-card-content>
     </ion-card>
 
     <!-- Tarjeta para Pasajero -->
-    <ion-card color="tertiary" button (click)="selectPasajero()">
+    <ion-card color="tertiary" button (click)="selectPasajero()" class="role-card">
       <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="person" size="large"></ion-icon>
+        <ion-card-title class="card-title">
+          <ion-icon name="person" size="large" class="card-icon"></ion-icon>
           Pasajero
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        Elige ser pasajero para buscar viajes disponibles. Podrás ver las rutas y seleccionar la que mejor te convenga.
+        <p>Elige ser pasajero para buscar viajes disponibles. Podrás ver las rutas y seleccionar la que mejor te convenga.</p>
       </ion-card-content>
     </ion-card>
 
-
-    <!-- Mapa interactivo (Ya agregado, solo mejorar el estilo) -->
+    <!-- Mapa interactivo -->
     <div class="map-section">
       <h3 class="subtitle">Ubicaciones actuales</h3>
-      <div id="map" style="height: 300px;"></div>
+      <div id="map" class="map-container"></div>
     </div>
-
   </div>
 </ion-content>
