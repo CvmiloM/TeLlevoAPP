@@ -16,25 +16,21 @@
     </ion-card-header>
 
     <ion-card-content>
-      <!-- Campo de entrada para el destino -->
-      <ion-item>
-        <ion-label position="stacked">Destino</ion-label>
-        <ion-input
-          placeholder="Ingresa el destino"
-          [(ngModel)]="destino"
-          (ionInput)="buscarDestino()"
-        ></ion-input>
-      </ion-item>
+   
 
       <!-- Lista de sugerencias de destino -->
-      <ion-list *ngIf="suggestions.length > 0">
-        <ion-item
-          *ngFor="let suggestion of suggestions"
-          (click)="seleccionarDestino(suggestion.coordinates)"
-        >
-          {{ suggestion.place_name }}
+      <div class="destino-input-container">
+        <ion-item>
+          <ion-label position="stacked">Destino</ion-label>
+          <ion-input [(ngModel)]="destino" (ionInput)="buscarDestino()" placeholder="Ingresa el destino"></ion-input>
         </ion-item>
-      </ion-list>
+        
+        <div *ngIf="suggestions.length > 0" class="suggestions-list">
+          <div *ngFor="let suggestion of suggestions" class="suggestion-item" (click)="seleccionarDestino(suggestion.coordinates, suggestion.place_name)">
+            {{ suggestion.place_name }}
+          </div>
+        </div>
+      </div>
 
       <!-- Otros campos del formulario de viaje -->
       <ion-item>

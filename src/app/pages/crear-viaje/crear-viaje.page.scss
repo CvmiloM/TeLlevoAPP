@@ -40,3 +40,37 @@ ion-content {
   border-radius: 10px;
   overflow: hidden;
 }
+.destino-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  margin-top: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.suggestion-item {
+  padding: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  border-bottom: 1px solid #444444;
+  transition: background-color 0.3s;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: #333333;
+}
