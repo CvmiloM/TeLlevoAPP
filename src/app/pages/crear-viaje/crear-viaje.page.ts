@@ -162,7 +162,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.costo && this.costo > 1000) {
+    if (this.costo && this.costo < 1000) {
       const alert = await this.alertController.create({
         header: 'Error',
         message: 'El costo por persona debe ser de al menos 1,000.',
