@@ -1,30 +1,97 @@
 ion-content {
-    --background: #121212;
-    color: #ffffff;
-  }
-  
-  ion-card {
-    background: #1e1e1e;
-    margin: 10px 0;
-  }
-  
-  ion-card-title {
-    color: #ffffff;
-  }
-  
-  .action-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
-  
-  .no-data {
-    text-align: center;
-    margin-top: 20px;
-    color: #bbbbbb;
-  }
-  
-  ion-card-content p {
-    margin: 5px 0;
-  }
-  
+  --background: #121212;
+  padding: 1rem;
+}
+
+ion-header {
+  --background: #1f1f1f;
+  color: #ffffff;
+  border-bottom: 1px solid #333;
+}
+
+.historial-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-header {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #00e676; /* Verde brillante */
+  text-align: center;
+  margin: 1rem 0;
+  text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.no-viajes-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+ion-list {
+  width: 100%;
+}
+
+.viaje-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin: 0.7rem 0;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.viaje-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.viaje-info {
+  flex-grow: 1;
+  padding-right: 1rem;
+}
+
+.viaje-info h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00e676; /* Verde brillante */
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.viaje-info p {
+  font-size: 0.95rem;
+  color: #b3b3b3;
+  margin: 0.2rem 0;
+}
+
+.delete-button {
+  --background: #ff5252;
+  --border-radius: 50%;
+  color: #ffffff;
+  padding: 0.6rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  transition: background-color 0.3s, transform 0.3s;
+  box-shadow: 0 3px 8px rgba(255, 82, 82, 0.4);
+}
+
+.delete-button:hover {
+  background-color: #ff1744;
+  transform: scale(1.1);
+}

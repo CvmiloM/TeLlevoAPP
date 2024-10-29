@@ -1,34 +1,41 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { AuthService } from '../../services/auth.service';; // Asegúrate de tener un servicio de autenticación
-import { Subscription } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 
 @Component({
   selector: 'app-historial',
   templateUrl: './historial.page.html',
   styleUrls: ['./historial.page.scss'],
 })
-export class HistorialPage implements OnInit, OnDestroy {
+export class HistorialPage implements OnInit {
+  userId: string | null = null;
   viajes: any[] = [];
-  viajesSubscription: Subscription | undefined;
-  conductorId: string | null = null;
 
-  constructor(private db: AngularFireDatabase, private authService: AuthService) {}
+  constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {}
 
   ngOnInit() {
-    // Obtener el ID del conductor autenticado
-    
-
-    // Escuchar los cambios en la base de datos de "viajes" y filtrar solo los del conductor
-    this.viajesSubscription = this.db.list('viajes').valueChanges().subscribe((data: any[]) => {
-      this.viajes = data.filter(viaje => viaje.conductorId === this.conductorId);
-      console.log('Historial de viajes:', this.viajes);
+    this.afAuth.authState.subscribe(user => {
+      if (user) {
+        this.userId = user.uid;
+        this.loadHistorialViajes();
+      }
     });
   }
 
-  ngOnDestroy() {
-    if (this.viajesSubscription) {
-      this.viajesSubscription.unsubscribe();
+  loadHistorialViajes() {
+    if (this.userId) {
+      this.db.list(`usuarios/${this.userId}/viajes`).snapshotChanges().subscribe(actions => {
+        this.viajes = actions.map(action => ({
+          key: action.key,
+          ...(action.payload.val() as object)
+        }));
+      });
+    }
+  }
+
+  async eliminarViaje(viajeId: string) {
+    if (this.userId) {
+      await this.db.object(`usuarios/${this.userId}/viajes/${viajeId}`).remove();
     }
   }
 }

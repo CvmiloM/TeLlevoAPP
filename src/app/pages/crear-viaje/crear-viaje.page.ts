@@ -3,6 +3,7 @@ import * as mapboxgl from 'mapbox-gl';
 import { Geolocation } from '@capacitor/geolocation';
 import { environment } from '../../../environments/environment';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
@@ -21,19 +22,27 @@ export class CrearViajePage implements OnInit, OnDestroy {
   destinoCoords: [number, number] | null = null;
   suggestions: any[] = [];
   viajeId: string = '';
-  conductorId: string = 'conductor-123';
+  userId: string | null = null;
   userExperience: number = 0;
   userLevel: number = 1;
   experienceNeededForNextLevel: number = 10;
 
   constructor(
     private db: AngularFireDatabase,
+    private afAuth: AngularFireAuth,
     private alertController: AlertController,
     private router: Router
   ) {}
 
   async ngOnInit() {
     (mapboxgl as any).accessToken = environment.accessToken;
+
+    this.afAuth.authState.subscribe((user) => {
+      if (user) {
+        this.userId = user.uid;
+        this.loadUserExperience();
+      }
+    });
 
     const posicion = await Geolocation.getCurrentPosition();
     this.ubicacionInicial = [posicion.coords.longitude, posicion.coords.latitude];
@@ -46,8 +55,6 @@ export class CrearViajePage implements OnInit, OnDestroy {
     });
 
     new mapboxgl.Marker().setLngLat(this.ubicacionInicial).addTo(this.map);
-
-    this.loadUserExperience();
   }
 
   ngOnDestroy() {
@@ -55,13 +62,14 @@ export class CrearViajePage implements OnInit, OnDestroy {
   }
 
   loadUserExperience() {
-    this.db.object(`usuarios/${this.conductorId}/profile`).valueChanges().subscribe((profile: any) => {
-      if (profile) {
-        this.userExperience = profile.experience || 0;
-        this.userLevel = profile.level || 1;
-        console.log("Nivel y experiencia cargados:", this.userLevel, this.userExperience);
-      }
-    });
+    if (this.userId) {
+      this.db.object(`usuarios/${this.userId}/profile`).valueChanges().subscribe((profile: any) => {
+        if (profile) {
+          this.userExperience = profile.experience || 0;
+          this.userLevel = profile.level || 1;
+        }
+      });
+    }
   }
 
   buscarDestino() {
@@ -172,7 +180,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isComplete()) {
+    if (this.isComplete() && this.userId) {
       const rutaCoordenadas = await this.dibujarRuta(this.destinoCoords!);
 
       const viajeData = {
@@ -181,17 +189,20 @@ export class CrearViajePage implements OnInit, OnDestroy {
         asientos: this.asientos,
         costo: this.costo,
         ubicacionInicial: this.ubicacionInicial,
-        destinoCoords: this.destinoCoords,
+        destinoCoords: this.
+        destinoCoords,
         asientosDisponibles: this.asientos,
-        conductorId: this.conductorId,
+        conductorId: this.userId,
         estado: 'activo',
         ruta: rutaCoordenadas,
       };
 
-      const viajeRef = this.db.list('viajes').push(viajeData);
+      // Guardar el viaje en la ruta específica del usuario
+      const viajeRef = this.db.list(`usuarios/${this.userId}/viajes`).push(viajeData);
       this.viajeId = viajeRef.key || '';
-      this.db.object(`viajesActivos/${this.conductorId}`).set({ id: this.viajeId });
+      this.db.object(`viajesActivos/${this.userId}`).set({ id: this.viajeId });
 
+      // Actualizar experiencia y nivel
       this.updateExperience(5);
       console.log('Viaje creado y guardado en Firebase:', viajeData);
       this.mostrarAlerta();
@@ -207,7 +218,8 @@ export class CrearViajePage implements OnInit, OnDestroy {
       this.userExperience -= this.experienceNeededForNextLevel;
       this.experienceNeededForNextLevel += 10;
     }
-    this.db.object(`usuarios/${this.conductorId}/profile`).update({
+    // Guardar experiencia y nivel en Realtime Database
+    this.db.object(`usuarios/${this.userId}/profile`).update({
       level: this.userLevel,
       experience: this.userExperience
     });

@@ -1,38 +1,28 @@
 <ion-header>
   <ion-toolbar color="dark">
-    <ion-title style="text-align: center; font-size: 1.5rem; font-weight: bold; color: #FFF;">
-      Historial de Viajes
-    </ion-title>
+    <ion-title color="success">Historial de Viajes</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/conductor"></ion-back-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content style="background-color: #000;">
-  <ion-card *ngIf="viajes.length === 0" class="no-viajes-card" style="margin: 20px; text-align: center; background-color: #111; color: #FFF; border-radius: 10px;">
-    <ion-card-content style="font-size: 1.1rem;">
-      <p>No tienes viajes registrados en tu historial.</p>
-    </ion-card-content>
+<ion-content color="dark">
+  <ion-card *ngIf="viajes.length === 0">
+    <ion-card-content>No tienes viajes en tu historial.</ion-card-content>
   </ion-card>
 
-  <ion-list *ngIf="viajes.length > 0" style="padding: 10px;">
-    <ion-card *ngFor="let viaje of viajes" style="margin-bottom: 15px; background-color: #111; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6); color: #FFF;">
-      <ion-card-header>
-        <ion-card-title style="font-size: 1.3rem; color: #1DB954; text-transform: uppercase;">
-          {{ viaje.destino }}
-        </ion-card-title>
-        <p style="color: #CCC; font-size: 0.9rem;">Fecha: {{ viaje.fecha | date: 'medium' }}</p>
-      </ion-card-header>
-      <ion-card-content>
-        <p style="font-size: 1rem;">{{ viaje.descripcion }}</p>
-        <p style="font-size: 0.9rem; color: #CCC;">
-          <ion-icon name="cash-outline" style="margin-right: 5px; color: #FFC107;"></ion-icon> Costo: {{ viaje.costo | currency }}
-        </p>
-        <p style="font-size: 0.9rem; color: #CCC;">
-          <ion-icon name="people-outline" style="margin-right: 5px; color: #00BFFF;"></ion-icon> Asientos ocupados: {{ viaje.asientosOcupados }}
-        </p>
-        <p style="font-size: 0.9rem; color: #CCC;">
-          <ion-icon name="location-outline" style="margin-right: 5px; color: #FF6347;"></ion-icon> Ubicación inicial: {{ viaje.ubicacionInicial }}
-        </p>
-      </ion-card-content>
-    </ion-card>
+  <ion-list *ngIf="viajes.length > 0">
+    <ion-item *ngFor="let viaje of viajes">
+      <ion-label>
+        <h2>Destino: {{ viaje.destino }}</h2>
+        <p>Descripción: {{ viaje.descripcion }}</p>
+        <p>Asientos: {{ viaje.asientos }}</p>
+        <p>Costo: ${{ viaje.costo | number:'1.0-2' }}</p>
+      </ion-label>
+      <ion-button color="danger" slot="end" (click)="eliminarViaje(viaje.key)">
+        <ion-icon name="trash"></ion-icon>
+      </ion-button>
+    </ion-item>
   </ion-list>
 </ion-content>
