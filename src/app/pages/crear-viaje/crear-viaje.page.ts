@@ -6,6 +6,7 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-crear-viaje',
@@ -31,10 +32,12 @@ export class CrearViajePage implements OnInit, OnDestroy {
     private db: AngularFireDatabase,
     private afAuth: AngularFireAuth,
     private alertController: AlertController,
-    private router: Router
+    private router: Router,
+    private storage: Storage // Agregar Storage aquí
   ) {}
 
   async ngOnInit() {
+    await this.storage.create(); // Inicializa el almacenamiento
     (mapboxgl as any).accessToken = environment.accessToken;
 
     this.afAuth.authState.subscribe((user) => {
@@ -92,7 +95,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
 
   seleccionarDestino(coordinates: [number, number], placeName: string) {
     this.destinoCoords = coordinates;
-    this.destino = placeName;  // Establece el nombre seleccionado en el campo de destino
+    this.destino = placeName;
     this.suggestions = [];
     this.dibujarRuta(this.destinoCoords);
   }
@@ -148,35 +151,23 @@ export class CrearViajePage implements OnInit, OnDestroy {
     return this.destino !== '' && this.descripcion !== '' && this.asientos !== null && this.costo !== null;
   }
 
-  async mostrarAlerta() {
+  async mostrarAlerta(mensaje: string) {
     const alert = await this.alertController.create({
-      header: 'Éxito',
-      message: 'Su viaje se ha creado correctamente.',
+      header: 'Información',
+      message: mensaje,
       buttons: ['OK']
     });
     await alert.present();
-    await alert.onDidDismiss();
-    this.router.navigate(['/conductor']);
   }
 
   async crearViaje() {
     if (this.asientos && this.asientos > 6) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'El número máximo de asientos permitidos es 6.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      await this.mostrarAlerta('El número máximo de asientos permitidos es 6.');
       return;
     }
 
     if (this.costo && this.costo < 1000) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'El costo por persona debe ser de al menos 1,000.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      await this.mostrarAlerta('El costo por persona debe ser de al menos 1,000.');
       return;
     }
 
@@ -189,26 +180,35 @@ export class CrearViajePage implements OnInit, OnDestroy {
         asientos: this.asientos,
         costo: this.costo,
         ubicacionInicial: this.ubicacionInicial,
-        destinoCoords: this.
-        destinoCoords,
+        destinoCoords: this.destinoCoords,
         asientosDisponibles: this.asientos,
         conductorId: this.userId,
         estado: 'activo',
         ruta: rutaCoordenadas,
       };
 
-      // Guardar el viaje en la ruta específica del usuario
+      // Guardar en Firebase
       const viajeRef = this.db.list(`usuarios/${this.userId}/viajes`).push(viajeData);
       this.viajeId = viajeRef.key || '';
       this.db.object(`viajesActivos/${this.userId}`).set({ id: this.viajeId });
 
-      // Actualizar experiencia y nivel
+      // Guardar en Ionic Storage
+      await this.guardarViajeLocal(viajeData);
+
+      // Actualizar experiencia y mostrar éxito
       this.updateExperience(5);
-      console.log('Viaje creado y guardado en Firebase:', viajeData);
-      this.mostrarAlerta();
+      await this.mostrarAlerta('Su viaje se ha creado correctamente.');
+      this.router.navigate(['/conductor']);
     } else {
-      console.log('Por favor, completa todos los campos.');
+      await this.mostrarAlerta('Por favor, completa todos los campos.');
     }
+  }
+
+  async guardarViajeLocal(viajeData: any) {
+    let viajesLocales = await this.storage.get('viajes') || [];
+    viajesLocales.push(viajeData);
+    await this.storage.set('viajes', viajesLocales);
+    console.log('Viaje guardado en Ionic Storage:', viajeData);
   }
 
   updateExperience(points: number) {
@@ -218,7 +218,6 @@ export class CrearViajePage implements OnInit, OnDestroy {
       this.userExperience -= this.experienceNeededForNextLevel;
       this.experienceNeededForNextLevel += 10;
     }
-    // Guardar experiencia y nivel en Realtime Database
     this.db.object(`usuarios/${this.userId}/profile`).update({
       level: this.userLevel,
       experience: this.userExperience
