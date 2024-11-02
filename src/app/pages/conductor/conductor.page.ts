@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
-
 
 @Component({
   selector: 'app-conductor',
@@ -9,15 +10,20 @@ import { Router } from '@angular/router';
 })
 export class ConductorPage implements OnInit {
   disponible: boolean = false;
+  pasajeros: any[] = [];
 
-  constructor(private router: Router) { }
+  constructor(
+    private db: AngularFireDatabase,
+    private storage: Storage,
+    private router: Router
+  ) {}
 
-
-  ngOnInit() {
+  async ngOnInit() {
+    await this.storage.create();
+    this.cargarPasajerosDesdeStorage();
   }
 
   cambiarDisponibilidad() {
-    // Lógica para cambiar la disponibilidad del conductor
     if (this.disponible) {
       console.log('Conductor disponible para viajes.');
     } else {
@@ -25,16 +31,27 @@ export class ConductorPage implements OnInit {
     }
   }
 
+  async cargarPasajerosDesdeStorage() {
+    this.pasajeros = [];
+    const keys = await this.storage.keys();
+
+    for (const key of keys) {
+      if (key.startsWith('viaje_aceptado_')) {
+        const viaje = await this.storage.get(key);
+        this.pasajeros.push(viaje);
+      }
+    }
+    console.log('Pasajeros cargados desde Storage:', this.pasajeros);
+  }
+
   verSolicitudes() {
-    // Lógica para ver las solicitudes de pasajeros
     console.log('Mostrando solicitudes de pasajeros...');
   }
 
   crearViaje() {
-    // Lógica para ver las solicitudes de pasajeros
-    console.log('Mostrando solicitudes de pasajeros...');
     this.router.navigate(['/crear-viaje']);
   }
+
   verHistorial() {
     this.router.navigate(['/historial']);
   }

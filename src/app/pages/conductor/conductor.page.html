@@ -13,14 +13,22 @@
   <div class="content-container">
     <ion-card class="info-card">
       <ion-card-header>
-        <ion-card-title class="card-title">Disponibilidad</ion-card-title>
-        <ion-card-subtitle class="card-subtitle">Activa tu estado como conductor</ion-card-subtitle>
+        <ion-card-title class="card-title">Solicitudes de Pasajeros</ion-card-title>
+        <ion-card-subtitle class="card-subtitle">Lista de pasajeros que aceptaron el viaje</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
-        <ion-item class="toggle-item">
-          <ion-label>Disponible para viajes</ion-label>
-          <ion-toggle [(ngModel)]="disponible" (ionChange)="cambiarDisponibilidad()"></ion-toggle>
-        </ion-item>
+        <!-- Lista de pasajeros que aceptaron el viaje -->
+        <ion-list *ngIf="pasajeros.length > 0; else noPasajeros">
+          <ion-item *ngFor="let pasajero of pasajeros">
+            <ion-label>
+              <h2>{{ pasajero.email }}</h2>
+              <p>Ubicación: Lat {{ pasajero.ubicacion.lat }}, Lng {{ pasajero.ubicacion.lng }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        <ng-template #noPasajeros>
+          <ion-label class="empty-label">No hay solicitudes de pasajeros por el momento.</ion-label>
+        </ng-template>
       </ion-card-content>
     </ion-card>
 
@@ -32,7 +40,7 @@
         Ver Historial
       </ion-button>
       <ion-button expand="block" routerLink="/role-selection" color="primary" class="custom-button">
-        Volver 
+        Volver
       </ion-button>
     </div>
 
