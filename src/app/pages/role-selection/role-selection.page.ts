@@ -20,20 +20,64 @@ export class RoleSelectionPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Obtener el correo del usuario autenticado
     this.afAuth.authState.subscribe(user => {
       this.userEmail = user ? user.email : 'Usuario';
     });
 
-    this.loadMap();
+    this.checkPermissionsAndLoadMap();
   }
 
-  async loadMap() {
+  async checkPermissionsAndLoadMap() {
+    if (this.isRunningOnMobile()) {
+      const hasPermission = await this.checkLocationPermission();
+
+      if (hasPermission) {
+        this.loadMapWithCapacitor();
+      } else {
+        console.warn('Permission denied or not granted');
+      }
+    } else {
+      this.loadMapWithBrowserGeolocation();
+    }
+  }
+
+  isRunningOnMobile(): boolean {
+    return !!navigator.userAgent.match(/Android|iPhone|iPad|iPod/i);
+  }
+
+  async checkLocationPermission(): Promise<boolean> {
+    const permission = await Geolocation.requestPermissions();
+    return permission.location === 'granted';
+  }
+
+  async loadMapWithCapacitor() {
     (mapboxgl as any).accessToken = environment.accessToken;
 
-    const position = await Geolocation.getCurrentPosition();
-    const coords = [position.coords.longitude, position.coords.latitude] as [number, number];
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      const coords = [position.coords.longitude, position.coords.latitude] as [number, number];
 
+      this.initializeMap(coords);
+    } catch (error) {
+      console.error('Error loading map or getting location:', error);
+    }
+  }
+
+  loadMapWithBrowserGeolocation() {
+    (mapboxgl as any).accessToken = environment.accessToken;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = [position.coords.longitude, position.coords.latitude] as [number, number];
+        this.initializeMap(coords);
+      },
+      (error) => {
+        console.error('Error getting browser location:', error);
+      }
+    );
+  }
+
+  initializeMap(coords: [number, number]) {
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
