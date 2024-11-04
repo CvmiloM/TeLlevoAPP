@@ -56,7 +56,11 @@ const routes: Routes = [
   {
     path: 'buscar-conductor',
     loadChildren: () => import('./pages/buscar-conductor/buscar-conductor.module').then( m => m.BuscarConductorPageModule)
+  },  {
+    path: 'recuperar',
+    loadChildren: () => import('./pages/recuperar/recuperar.module').then( m => m.RecuperarPageModule)
   },
+
 
  
   
