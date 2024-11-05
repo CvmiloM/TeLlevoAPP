@@ -183,17 +183,17 @@ export class CrearViajePage implements OnInit, OnDestroy {
         destinoCoords: this.destinoCoords,
         asientosDisponibles: this.asientos,
         conductorId: this.userId,
-        estado: 'activo',
+        estado: 'activo', // Establecer estado como activo
         ruta: rutaCoordenadas,
       };
 
-      // Guardar en la ruta global "viajes"
+      // Guardar en Firebase
       const viajeRef = this.db.list('viajes').push(viajeData);
       this.viajeId = viajeRef.key || '';
-      this.db.object(`viajes/${this.viajeId}`).update({ id: this.viajeId });
+      await this.db.object(`viajes/${this.viajeId}`).update({ id: this.viajeId });
 
       // Guardar en la ruta específica del usuario
-      this.db.list(`usuarios/${this.userId}/viajes`).set(this.viajeId, viajeData);
+      await this.db.list(`usuarios/${this.userId}/viajes`).set(this.viajeId, viajeData);
 
       // Guardar en Ionic Storage
       await this.guardarViajeLocal(viajeData);
