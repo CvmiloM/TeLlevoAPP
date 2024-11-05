@@ -1,6 +1,7 @@
 # TeLlevoAPP
 
-![Mono Bailando](https://media.giphy.com/media/tu-url-del-gif.gif)
+![Mono Bailando](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmp4aWFobmY0ZmIyY2hnNDNjOXRzMmh5YjU1a2tycXpobTZ3Y2J5aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kr0OMSLiyKUF2/giphy.gif)
+
 
 
 TeLlevoAPP es una aplicación móvil desarrollada en Ionic Angular que conecta a estudiantes que tienen transporte propio con aquellos que necesitan transporte para regresar a casa después de clases. La aplicación facilita la creación y aceptación de viajes, promoviendo el compañerismo y reduciendo la huella de carbono.
