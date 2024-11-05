@@ -11,6 +11,7 @@ import { StorageService } from '../../services/storage.service'; // Servicio de 
 export class HomePage {
   email: string = '';
   password: string = '';
+  showPassword: boolean = false; // Variable para controlar la visibilidad de la contraseña
 
   constructor(private authService: AuthService, private storageService: StorageService, private router: Router) {}
 
@@ -40,5 +41,9 @@ export class HomePage {
         alert('Ocurrió un error desconocido.');
       }
     }
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword; // Alternar la visibilidad de la contraseña
   }
 }
