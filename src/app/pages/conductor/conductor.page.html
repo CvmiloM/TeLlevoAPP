@@ -22,6 +22,7 @@
         <p>Costo: {{ viajeActivo.costo }}</p>
         <ion-button color="danger" (click)="cancelarViaje()">Cancelar Viaje</ion-button>
         <ion-button color="primary" (click)="marcarComoEnCurso()">Marcar como en curso</ion-button>
+        <ion-button expand="full" color="secondary" (click)="visualizarMapa()">Visualizar Mapa</ion-button> <!-- Nuevo botón -->
       </ion-card-content>
       <div id="mapa" style="width: 100%; height: 300px;"></div>
     </ion-card>

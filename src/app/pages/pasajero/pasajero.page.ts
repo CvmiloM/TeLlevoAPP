@@ -40,7 +40,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
       .subscribe((data) => {
         this.viajes = data
           .map((action) => ({ key: action.key, ...action.payload.val() as any }))
-          .filter((viaje) => viaje.asientosDisponibles > 0);
+          .filter((viaje) => viaje.asientosDisponibles > 0 && viaje.estado !== 'cancelado' && viaje.estado !== 'en curso'); // Filtrar viajes cancelados y en curso
         console.log('Viajes actualizados:', this.viajes);
       });
   }
@@ -114,7 +114,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
             type: 'LineString',
             coordinates: rutaCoordenadas,
           },
-          properties: {},
+          properties: {}, // Asegurarse de incluir properties vacíos
         },
       });
 

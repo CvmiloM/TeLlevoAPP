@@ -13,7 +13,6 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./conductor.page.scss'],
 })
 export class ConductorPage implements OnInit {
-  disponible: boolean = false;
   pasajeros: any[] = [];
   viajeActivo: any = null; // Almacena el viaje activo del conductor
   userId: string | null = null;
@@ -43,8 +42,18 @@ export class ConductorPage implements OnInit {
       console.log('Viaje activo:', this.viajeActivo);
       if (this.viajeActivo) {
         this.dibujarRuta(this.viajeActivo.ruta);
+        this.cargarPasajeros(); // Cargar los pasajeros que aceptaron el viaje activo
       }
     });
+  }
+
+  async cargarPasajeros() {
+    if (this.viajeActivo) {
+      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).valueChanges().subscribe((pasajeros: any[]) => {
+        this.pasajeros = pasajeros || []; // Asegurarse de que no sea undefined
+        console.log('Pasajeros cargados:', this.pasajeros);
+      });
+    }
   }
 
   async dibujarRuta(rutaCoordenadas: [number, number][]) {
@@ -66,7 +75,7 @@ export class ConductorPage implements OnInit {
             type: 'LineString',
             coordinates: rutaCoordenadas,
           },
-          properties: {},
+          properties: {}, // Asegurarse de incluir properties vacíos
         },
       });
 
@@ -88,18 +97,36 @@ export class ConductorPage implements OnInit {
 
   async cancelarViaje() {
     if (this.viajeActivo) {
-        await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
-        this.viajeActivo = null; // Limpiar viaje activo
-        this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
-    }
-}
+      // Cancelar el viaje en Firebase
+      await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
 
-marcarComoEnCurso() {
-  if (this.viajeActivo) {
-      this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
-      this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
+      // Eliminar los pasajeros asociados a este viaje
+      await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove(); // Eliminar pasajeros asociados
+
+      this.viajeActivo = null; // Limpiar viaje activo
+      this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
+    }
   }
-}
+
+  marcarComoEnCurso() {
+    if (this.viajeActivo) {
+      // Actualizar el estado del viaje a 'en curso'
+      this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
+
+      // Eliminar los pasajeros asociados a este viaje
+      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove(); 
+
+      this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
+      this.viajeActivo = null; // Limpiar viaje activo
+    }
+  }
+
+  visualizarMapa() {
+    if (this.viajeActivo) {
+      // Aquí puedes mostrar el mapa o ejecutar la lógica necesaria para mostrarlo
+      this.dibujarRuta(this.viajeActivo.ruta); // Por ejemplo, redibujar la ruta
+    }
+  }
 
   presentAlert(header: string, message: string) {
     this.alertController.create({

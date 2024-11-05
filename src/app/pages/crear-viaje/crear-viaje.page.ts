@@ -104,48 +104,48 @@ export class CrearViajePage implements OnInit, OnDestroy {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${this.ubicacionInicial.join(',')};${destinoCoords.join(',')}?geometries=geojson&access_token=${environment.accessToken}`;
 
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const route = data.routes[0].geometry.coordinates;
+        const response = await fetch(url);
+        const data = await response.json();
+        const route = data.routes[0].geometry.coordinates;
 
-      const geojson = {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: route,
-        },
-        properties: {}
-      } as GeoJSON.Feature;
+        const geojson: GeoJSON.Feature<GeoJSON.LineString> = {
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: route,
+            },
+            properties: {} // Asegúrate de que 'properties' esté presente
+        };
 
-      if (this.map.getSource('route')) {
-        (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
-      } else {
-        this.map.addSource('route', {
-          type: 'geojson',
-          data: geojson
-        });
+        if (this.map.getSource('route')) {
+            (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
+        } else {
+            this.map.addSource('route', {
+                type: 'geojson',
+                data: geojson
+            });
 
-        this.map.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#1DB954',
-            'line-width': 5
-          }
-        });
-      }
+            this.map.addLayer({
+                id: 'route',
+                type: 'line',
+                source: 'route',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#1DB954',
+                    'line-width': 5
+                }
+            });
+        }
 
-      return route;
+        return route;
     } catch (error) {
-      console.error('Error al dibujar la ruta:', error);
-      return [];
+        console.error('Error al dibujar la ruta:', error);
+        return [];
     }
-  }
+}
 
   isComplete(): boolean {
     return this.destino !== '' && this.descripcion !== '' && this.asientos !== null && this.costo !== null;
