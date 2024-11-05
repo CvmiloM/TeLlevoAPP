@@ -33,11 +33,11 @@ export class CrearViajePage implements OnInit, OnDestroy {
     private afAuth: AngularFireAuth,
     private alertController: AlertController,
     private router: Router,
-    private storage: Storage // Agregar Storage aquí
+    private storage: Storage
   ) {}
 
   async ngOnInit() {
-    await this.storage.create(); // Inicializa el almacenamiento
+    await this.storage.create();
     (mapboxgl as any).accessToken = environment.accessToken;
 
     this.afAuth.authState.subscribe((user) => {
@@ -187,10 +187,13 @@ export class CrearViajePage implements OnInit, OnDestroy {
         ruta: rutaCoordenadas,
       };
 
-      // Guardar en Firebase
-      const viajeRef = this.db.list(`usuarios/${this.userId}/viajes`).push(viajeData);
+      // Guardar en la ruta global "viajes"
+      const viajeRef = this.db.list('viajes').push(viajeData);
       this.viajeId = viajeRef.key || '';
-      this.db.object(`viajesActivos/${this.userId}`).set({ id: this.viajeId });
+      this.db.object(`viajes/${this.viajeId}`).update({ id: this.viajeId });
+
+      // Guardar en la ruta específica del usuario
+      this.db.list(`usuarios/${this.userId}/viajes`).set(this.viajeId, viajeData);
 
       // Guardar en Ionic Storage
       await this.guardarViajeLocal(viajeData);
