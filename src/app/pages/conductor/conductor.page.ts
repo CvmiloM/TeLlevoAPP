@@ -14,10 +14,11 @@ import { environment } from '../../../environments/environment';
 })
 export class ConductorPage implements OnInit {
   pasajeros: any[] = [];
-  viajeActivo: any = null; // Almacena el viaje activo del conductor
+  viajeActivo: any = null;
   userId: string | null = null;
-  map!: mapboxgl.Map;
-  markers: { [email: string]: mapboxgl.Marker } = {}; // Almacenar marcadores por email
+  map!: mapboxgl.Map; // Mapa principal de la ruta del viaje
+  mapaPasajeros!: mapboxgl.Map; // Mapa dedicado para los pasajeros
+  passengerMarkers: { [email: string]: mapboxgl.Marker } = {}; // Almacenar marcadores de pasajeros por email
 
   constructor(
     private db: AngularFireDatabase,
@@ -40,10 +41,9 @@ export class ConductorPage implements OnInit {
   async cargarViajes() {
     this.db.list('viajes').valueChanges().subscribe((viajes: any[]) => {
       this.viajeActivo = viajes.find((viaje) => viaje.conductorId === this.userId && viaje.estado === 'activo');
-      console.log('Viaje activo:', this.viajeActivo);
       if (this.viajeActivo) {
         this.dibujarRuta(this.viajeActivo.ruta);
-        this.cargarPasajeros(); // Cargar los pasajeros que aceptaron el viaje activo
+        this.cargarPasajeros(); // Cargar los pasajeros en tiempo real
       }
     });
   }
@@ -51,9 +51,8 @@ export class ConductorPage implements OnInit {
   async cargarPasajeros() {
     if (this.viajeActivo) {
       this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).valueChanges().subscribe((pasajeros: any[]) => {
-        this.pasajeros = pasajeros || []; // Asegurarse de que no sea undefined
-        console.log('Pasajeros cargados:', this.pasajeros);
-        this.mostrarUbicacionesPasajeros(); // Mostrar ubicaciones de los pasajeros en el mapa
+        this.pasajeros = pasajeros || [];
+        this.actualizarMapaPasajeros(); // Actualizar el mapa de pasajeros en tiempo real
       });
     }
   }
@@ -62,7 +61,7 @@ export class ConductorPage implements OnInit {
     (mapboxgl as any).accessToken = environment.accessToken;
 
     this.map = new mapboxgl.Map({
-      container: 'mapa', // ID del contenedor en el HTML
+      container: 'mapa',
       style: 'mapbox://styles/mapbox/streets-v11',
       center: this.viajeActivo.ubicacionInicial,
       zoom: 12,
@@ -77,7 +76,7 @@ export class ConductorPage implements OnInit {
             type: 'LineString',
             coordinates: rutaCoordenadas,
           },
-          properties: {}, // Asegurarse de incluir properties vacíos
+          properties: {},
         },
       });
 
@@ -97,86 +96,88 @@ export class ConductorPage implements OnInit {
     });
   }
 
-  visualizarMapaPasajeros() {
-    if (this.pasajeros.length > 0) {
-      // Tomar la ubicación del primer pasajero y asegurarse de que sea del tipo correcto
-      const primeraUbicacion = this.pasajeros[0].ubicacion;
-      const centro: [number, number] = [primeraUbicacion.lng, primeraUbicacion.lat]; // Asegurarse de que sea un array de tipo [number, number]
-      
-      // Crear un mapa para mostrar la ubicación de los pasajeros
-      this.map = new mapboxgl.Map({
-        container: 'mapa-pasajero', // ID del contenedor en el HTML
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: centro,
-        zoom: 12,
-      });
-  
-      this.pasajeros.forEach(pasajero => {
-        // Agregar un marcador para cada pasajero
-        new mapboxgl.Marker()
-          .setLngLat([pasajero.ubicacion.lng, pasajero.ubicacion.lat])
-          .addTo(this.map);
-      });
-    } else {
-      this.presentAlert('No hay pasajeros', 'No hay pasajeros aceptados para mostrar en el mapa.');
-    }
+  async inicializarMapaPasajeros() {
+    (mapboxgl as any).accessToken = environment.accessToken;
+
+    this.mapaPasajeros = new mapboxgl.Map({
+      container: 'mapa-pasajero',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [this.viajeActivo.ubicacionInicial[0], this.viajeActivo.ubicacionInicial[1]],
+      zoom: 12,
+    });
   }
 
-  mostrarUbicacionesPasajeros() {
-    if (this.map) {
-      // Limpiar los marcadores del mapa antes de agregar nuevos
-      Object.values(this.markers).forEach(marker => marker.remove());
-      this.markers = {}; // Reiniciar el objeto de marcadores
-
-      // Iterar sobre los pasajeros y mostrar su ubicación en el mapa
-      this.pasajeros.forEach(pasajero => {
-        const { ubicacion } = pasajero;
-        if (ubicacion) {
-          // Agregar un marcador para la ubicación del pasajero
-          const marker = new mapboxgl.Marker()
-            .setLngLat([ubicacion.lng, ubicacion.lat])
-            .addTo(this.map);
-          
-          // Almacenar el marcador en el objeto
-          this.markers[pasajero.email] = marker; 
-
-          // Centrar el mapa en la ubicación del pasajero
-          this.map.setCenter([ubicacion.lng, ubicacion.lat]);
+  visualizarMapaPasajeros() {
+    if (this.pasajeros.length > 0) {
+        // Inicializa el mapa solo si aún no existe
+        if (!this.mapaPasajeros) {
+            this.inicializarMapaPasajeros();
         }
-      });
+
+        // Limpia marcadores anteriores
+        Object.values(this.passengerMarkers).forEach(marker => marker.remove());
+        this.passengerMarkers = {}; 
+
+        // Agrega marcadores de cada pasajero en tiempo real
+        this.pasajeros.forEach(pasajero => {
+            const { email, ubicacion } = pasajero;
+            if (ubicacion) {
+                const marker = new mapboxgl.Marker()
+                    .setLngLat([ubicacion.lng, ubicacion.lat])
+                    .addTo(this.mapaPasajeros);
+
+                this.passengerMarkers[email] = marker;
+            }
+        });
+    } else {
+        this.presentAlert('No hay pasajeros', 'No hay pasajeros aceptados para mostrar en el mapa.');
     }
+}
+
+
+  actualizarMapaPasajeros() {
+    if (!this.mapaPasajeros) {
+      this.inicializarMapaPasajeros();
+    }
+
+    // Eliminar los marcadores existentes de pasajeros antes de agregar los nuevos
+    Object.values(this.passengerMarkers).forEach(marker => marker.remove());
+    this.passengerMarkers = {};
+
+    // Agregar nuevos marcadores para cada pasajero
+    this.pasajeros.forEach(pasajero => {
+      const { email, ubicacion } = pasajero;
+      if (ubicacion) {
+        const marker = new mapboxgl.Marker()
+          .setLngLat([ubicacion.lng, ubicacion.lat])
+          .addTo(this.mapaPasajeros);
+
+        this.passengerMarkers[email] = marker;
+      }
+    });
   }
 
   async cancelarViaje() {
     if (this.viajeActivo) {
-      // Cancelar el viaje en Firebase
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
-
-      // Eliminar los pasajeros asociados a este viaje
-      await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove(); // Eliminar pasajeros asociados
-
-      this.viajeActivo = null; // Limpiar viaje activo
+      await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
+      this.viajeActivo = null;
       this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
     }
   }
 
   marcarComoEnCurso() {
     if (this.viajeActivo) {
-      // Actualizar el estado del viaje a 'en curso'
       this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
-
-      // Eliminar los pasajeros asociados a este viaje
-      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove(); 
-
+      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
       this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
-      this.viajeActivo = null; // Limpiar viaje activo
+      this.viajeActivo = null;
     }
   }
 
   visualizarMapa() {
     if (this.viajeActivo) {
-      // Aquí puedes mostrar el mapa o ejecutar la lógica necesaria para mostrarlo
-      this.dibujarRuta(this.viajeActivo.ruta); // Por ejemplo, redibujar la ruta
+      this.dibujarRuta(this.viajeActivo.ruta);
     }
   }
 

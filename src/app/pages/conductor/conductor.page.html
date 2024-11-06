@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header> 
   <ion-toolbar color="dark">
     <ion-title>Conductor</ion-title>
     <ion-buttons slot="end">
@@ -11,6 +11,7 @@
 
 <ion-content color="dark" fullscreen>
   <div class="content-container">
+    <!-- Información del viaje activo -->
     <ion-card class="info-card" *ngIf="viajeActivo">
       <ion-card-header>
         <ion-card-title class="card-title">Viaje Activo</ion-card-title>
@@ -22,11 +23,12 @@
         <p>Costo: {{ viajeActivo.costo }}</p>
         <ion-button expand="full" color="danger" (click)="cancelarViaje()">Cancelar Viaje</ion-button>
         <ion-button expand="full" color="primary" (click)="marcarComoEnCurso()">Marcar como en curso</ion-button>
-        <ion-button expand="full" color="secondary" (click)="visualizarMapa()">Visualizar Mapa</ion-button> <!-- Mapa de la ruta del viaje -->
+        <ion-button expand="full" color="secondary" (click)="visualizarMapa()">Visualizar Mapa</ion-button>
       </ion-card-content>
       <div id="mapa" style="width: 100%; height: 300px;"></div>
     </ion-card>
 
+    <!-- Lista de pasajeros que han aceptado el viaje -->
     <ion-card class="info-card" *ngIf="pasajeros.length > 0">
       <ion-card-header>
         <ion-card-title class="card-title">Pasajeros Aceptados</ion-card-title>
@@ -41,8 +43,8 @@
             </ion-label>
           </ion-item>
         </ion-list>
-        <ion-button expand="full" (click)="visualizarMapaPasajeros()">Visualizar Mapa de Pasajeros</ion-button> <!-- Botón para visualizar el mapa de pasajeros -->
-        <div id="mapa-pasajero" style="width: 100%; height: 300px;"></div> <!-- Mapa para la ubicación del pasajero -->
+        <ion-button expand="full" color="secondary" (click)="visualizarMapaPasajeros()">Visualizar Mapa de Pasajeros</ion-button>
+        <div id="mapa-pasajero" style="width: 100%; height: 300px; margin-top: 15px;"></div> <!-- Mapa para las ubicaciones de los pasajeros -->
       </ion-card-content>
     </ion-card>
 
