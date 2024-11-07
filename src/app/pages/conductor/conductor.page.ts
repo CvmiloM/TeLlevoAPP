@@ -124,16 +124,24 @@ export class ConductorPage implements OnInit {
             if (ubicacion) {
                 const marker = new mapboxgl.Marker()
                     .setLngLat([ubicacion.lng, ubicacion.lat])
+                    .setPopup(
+                      new mapboxgl.Popup({ offset: 25 })
+                        .setHTML(
+                          `<div style="background-color: #333; color: #fff; padding: 5px; border-radius: 5px; font-size: 14px;">
+                             Pasajero: ${email}
+                           </div>`
+                        )
+                    )
                     .addTo(this.mapaPasajeros);
 
+                // Guardar el marcador para futuras actualizaciones o eliminación
                 this.passengerMarkers[email] = marker;
             }
         });
     } else {
         this.presentAlert('No hay pasajeros', 'No hay pasajeros aceptados para mostrar en el mapa.');
     }
-}
-
+  }
 
   actualizarMapaPasajeros() {
     if (!this.mapaPasajeros) {
@@ -144,14 +152,23 @@ export class ConductorPage implements OnInit {
     Object.values(this.passengerMarkers).forEach(marker => marker.remove());
     this.passengerMarkers = {};
 
-    // Agregar nuevos marcadores para cada pasajero
+    // Agregar nuevos marcadores para cada pasajero con un popup para el correo electrónico
     this.pasajeros.forEach(pasajero => {
       const { email, ubicacion } = pasajero;
       if (ubicacion) {
         const marker = new mapboxgl.Marker()
           .setLngLat([ubicacion.lng, ubicacion.lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 })
+              .setHTML(
+                `<div style="background-color: #333; color: #fff; padding: 5px; border-radius: 5px; font-size: 14px;">
+                   Pasajero: ${email}
+                 </div>`
+              )
+          )
           .addTo(this.mapaPasajeros);
 
+        // Guardar el marcador para futuras actualizaciones o eliminación
         this.passengerMarkers[email] = marker;
       }
     });
