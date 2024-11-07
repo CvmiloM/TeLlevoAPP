@@ -16,9 +16,8 @@ export class ConductorPage implements OnInit {
   pasajeros: any[] = [];
   viajeActivo: any = null;
   userId: string | null = null;
-  map!: mapboxgl.Map; // Mapa principal de la ruta del viaje
-  mapaPasajeros!: mapboxgl.Map; // Mapa dedicado para los pasajeros
-  passengerMarkers: { [email: string]: mapboxgl.Marker } = {}; // Almacenar marcadores de pasajeros por email
+  map!: mapboxgl.Map;
+  passengerMarkers: { [email: string]: mapboxgl.Marker } = {};
 
   constructor(
     private db: AngularFireDatabase,
@@ -42,8 +41,7 @@ export class ConductorPage implements OnInit {
     this.db.list('viajes').valueChanges().subscribe((viajes: any[]) => {
       this.viajeActivo = viajes.find((viaje) => viaje.conductorId === this.userId && viaje.estado === 'activo');
       if (this.viajeActivo) {
-        this.dibujarRuta(this.viajeActivo.ruta);
-        this.cargarPasajeros(); // Cargar los pasajeros en tiempo real
+        this.cargarPasajeros();
       }
     });
   }
@@ -52,12 +50,17 @@ export class ConductorPage implements OnInit {
     if (this.viajeActivo) {
       this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).valueChanges().subscribe((pasajeros: any[]) => {
         this.pasajeros = pasajeros || [];
-        this.actualizarMapaPasajeros(); // Actualizar el mapa de pasajeros en tiempo real
       });
     }
   }
 
-  async dibujarRuta(rutaCoordenadas: [number, number][]) {
+  visualizarMapa() {
+    if (this.viajeActivo) {
+      this.inicializarMapa(this.viajeActivo.ruta);
+    }
+  }
+
+  async inicializarMapa(rutaCoordenadas: [number, number][]) {
     (mapboxgl as any).accessToken = environment.accessToken;
 
     this.map = new mapboxgl.Map({
@@ -68,6 +71,7 @@ export class ConductorPage implements OnInit {
     });
 
     this.map.on('load', () => {
+      // Dibujar la ruta
       this.map.addSource('route', {
         type: 'geojson',
         data: {
@@ -93,66 +97,18 @@ export class ConductorPage implements OnInit {
           'line-width': 4,
         },
       });
+
+      // Agregar marcadores de pasajeros al mapa
+      this.agregarMarcadoresPasajeros();
     });
   }
 
-  async inicializarMapaPasajeros() {
-    (mapboxgl as any).accessToken = environment.accessToken;
-
-    this.mapaPasajeros = new mapboxgl.Map({
-      container: 'mapa-pasajero',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [this.viajeActivo.ubicacionInicial[0], this.viajeActivo.ubicacionInicial[1]],
-      zoom: 12,
-    });
-  }
-
-  visualizarMapaPasajeros() {
-    if (this.pasajeros.length > 0) {
-        // Inicializa el mapa solo si aún no existe
-        if (!this.mapaPasajeros) {
-            this.inicializarMapaPasajeros();
-        }
-
-        // Limpia marcadores anteriores
-        Object.values(this.passengerMarkers).forEach(marker => marker.remove());
-        this.passengerMarkers = {}; 
-
-        // Agrega marcadores de cada pasajero en tiempo real
-        this.pasajeros.forEach(pasajero => {
-            const { email, ubicacion } = pasajero;
-            if (ubicacion) {
-                const marker = new mapboxgl.Marker()
-                    .setLngLat([ubicacion.lng, ubicacion.lat])
-                    .setPopup(
-                      new mapboxgl.Popup({ offset: 25 })
-                        .setHTML(
-                          `<div style="background-color: #333; color: #fff; padding: 5px; border-radius: 5px; font-size: 14px;">
-                             Pasajero: ${email}
-                           </div>`
-                        )
-                    )
-                    .addTo(this.mapaPasajeros);
-
-                // Guardar el marcador para futuras actualizaciones o eliminación
-                this.passengerMarkers[email] = marker;
-            }
-        });
-    } else {
-        this.presentAlert('No hay pasajeros', 'No hay pasajeros aceptados para mostrar en el mapa.');
-    }
-  }
-
-  actualizarMapaPasajeros() {
-    if (!this.mapaPasajeros) {
-      this.inicializarMapaPasajeros();
-    }
-
-    // Eliminar los marcadores existentes de pasajeros antes de agregar los nuevos
+  agregarMarcadoresPasajeros() {
+    // Eliminar los marcadores existentes de pasajeros
     Object.values(this.passengerMarkers).forEach(marker => marker.remove());
     this.passengerMarkers = {};
 
-    // Agregar nuevos marcadores para cada pasajero con un popup para el correo electrónico
+    // Agregar nuevos marcadores para cada pasajero
     this.pasajeros.forEach(pasajero => {
       const { email, ubicacion } = pasajero;
       if (ubicacion) {
@@ -166,7 +122,7 @@ export class ConductorPage implements OnInit {
                  </div>`
               )
           )
-          .addTo(this.mapaPasajeros);
+          .addTo(this.map);
 
         // Guardar el marcador para futuras actualizaciones o eliminación
         this.passengerMarkers[email] = marker;
@@ -179,22 +135,8 @@ export class ConductorPage implements OnInit {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
       await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
       this.viajeActivo = null;
+      this.pasajeros = [];
       this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
-    }
-  }
-
-  marcarComoEnCurso() {
-    if (this.viajeActivo) {
-      this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
-      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
-      this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
-      this.viajeActivo = null;
-    }
-  }
-
-  visualizarMapa() {
-    if (this.viajeActivo) {
-      this.dibujarRuta(this.viajeActivo.ruta);
     }
   }
 
@@ -204,17 +146,5 @@ export class ConductorPage implements OnInit {
       message,
       buttons: ['OK'],
     }).then(alert => alert.present());
-  }
-
-  crearViaje() {
-    if (!this.viajeActivo) {
-      this.router.navigate(['/crear-viaje']);
-    } else {
-      this.presentAlert('Viaje en curso', 'No puedes crear un nuevo viaje mientras tengas uno activo.');
-    }
-  }
-
-  verHistorial() {
-    this.router.navigate(['/historial']);
   }
 }
