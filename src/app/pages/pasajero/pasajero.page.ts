@@ -6,6 +6,8 @@ import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { Geolocation } from '@capacitor/geolocation';
 import { Storage } from '@ionic/storage-angular';
+import { ToastController } from '@ionic/angular';
+import { Router } from '@angular/router'; // Importación de Router
 
 @Component({
   selector: 'app-pasajero',
@@ -22,7 +24,9 @@ export class PasajeroPage implements OnInit, OnDestroy {
   constructor(
     private db: AngularFireDatabase,
     private afAuth: AngularFireAuth,
-    private storage: Storage
+    private storage: Storage,
+    private toastController: ToastController,
+    private router: Router // Añadido Router
   ) {}
 
   async ngOnInit() {
@@ -78,7 +82,21 @@ export class PasajeroPage implements OnInit, OnDestroy {
       }
 
       await this.guardarViajeEnStorage(viaje, ubicacionPasajero);
+      this.mostrarToast('¡Has aceptado el viaje correctamente!');
+      
+      // Redirigir a role-selection
+      this.router.navigate(['/role-selection']);
     }
+  }
+
+  async mostrarToast(mensaje: string) {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 2000,
+      color: 'success',
+      position: 'bottom'
+    });
+    toast.present();
   }
 
   async guardarViajeEnStorage(viaje: any, ubicacionPasajero: any) {
