@@ -87,24 +87,38 @@ export class RoleSelectionPage implements OnInit {
     if (this.viajeActivo) {
       const viajeId = this.viajeActivo.viajeId;
   
-      // Incrementar el número de asientos disponibles en Firebase
-      const viajeRef = this.db.object(`viajes/${viajeId}`);
-      await viajeRef.update({
-        asientosDisponibles: this.viajeActivo.asientosDisponibles + 1,
-      });
-  
-      // Buscar y eliminar al pasajero de la lista de pasajeros usando el email
+      // Buscar y eliminar al pasajero específico de la lista de pasajeros
       const pasajerosRef = this.db.list(`viajes/${viajeId}/pasajeros`);
-      pasajerosRef.query.once('value', (snapshot) => {
+      let pasajeroEliminado = false;
+  
+      // Remover pasajero de la lista de pasajeros
+      await pasajerosRef.query.once('value', (snapshot) => {
         snapshot.forEach((childSnapshot) => {
           const pasajeroData = childSnapshot.val();
           if (pasajeroData.email === this.userEmail) {
-            pasajerosRef.remove(childSnapshot.key!); // Eliminar usando el key encontrado
-            return true; // Romper el bucle al encontrar el pasajero
+            // Eliminar al pasajero de la lista
+            pasajerosRef.remove(childSnapshot.key!);
+            pasajeroEliminado = true;
+            return true; // Romper el bucle al encontrar y eliminar el pasajero
           }
           return false;
         });
       });
+  
+      // Solo si el pasajero fue eliminado, recalcular los asientos disponibles
+      if (pasajeroEliminado) {
+        const viajeRef = this.db.object(`viajes/${viajeId}`);
+  
+        // Obtenemos el número actual de pasajeros y recalculamos los asientos disponibles
+        const pasajerosSnapshot = await pasajerosRef.query.once('value');
+        const numeroPasajerosActual = pasajerosSnapshot.numChildren();
+        const asientosTotales = this.viajeActivo.asientos; // Asumiendo que tienes el total de asientos en `this.viajeActivo`
+  
+        // Actualizar los asientos disponibles en el viaje
+        await viajeRef.update({
+          asientosDisponibles: asientosTotales - numeroPasajerosActual,
+        });
+      }
   
       // Eliminar el viaje activo del perfil del usuario en Firebase
       const userId = (await this.afAuth.currentUser)?.uid;
@@ -116,6 +130,9 @@ export class RoleSelectionPage implements OnInit {
       alert('El viaje ha sido cancelado y el asiento está nuevamente disponible.');
     }
   }
+  
+  
+  
 
   selectConductor() {
     this.router.navigate(['/conductor']);
