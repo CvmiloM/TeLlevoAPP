@@ -71,7 +71,6 @@ export class ConductorPage implements OnInit {
     });
 
     this.map.on('load', () => {
-      // Dibujar la ruta
       this.map.addSource('route', {
         type: 'geojson',
         data: {
@@ -98,17 +97,14 @@ export class ConductorPage implements OnInit {
         },
       });
 
-      // Agregar marcadores de pasajeros al mapa
       this.agregarMarcadoresPasajeros();
     });
   }
 
   agregarMarcadoresPasajeros() {
-    // Eliminar los marcadores existentes de pasajeros
     Object.values(this.passengerMarkers).forEach(marker => marker.remove());
     this.passengerMarkers = {};
 
-    // Agregar nuevos marcadores para cada pasajero
     this.pasajeros.forEach(pasajero => {
       const { email, ubicacion } = pasajero;
       if (ubicacion) {
@@ -124,7 +120,6 @@ export class ConductorPage implements OnInit {
           )
           .addTo(this.map);
 
-        // Guardar el marcador para futuras actualizaciones o eliminación
         this.passengerMarkers[email] = marker;
       }
     });
@@ -137,6 +132,15 @@ export class ConductorPage implements OnInit {
       this.viajeActivo = null;
       this.pasajeros = [];
       this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
+    }
+  }
+
+  async crearViaje() {
+    if (this.viajeActivo) {
+      // Mostrar alerta si ya hay un viaje activo
+      await this.presentAlert('No puedes crear un viaje', 'No puedes crear un nuevo viaje mientras tienes uno activo.');
+    } else {
+      this.router.navigate(['/crear-viaje']);
     }
   }
 
