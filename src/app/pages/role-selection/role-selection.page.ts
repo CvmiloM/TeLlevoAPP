@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AngularFireDatabase } from '@angular/fire/compat/database';
 import * as mapboxgl from 'mapbox-gl';
-import { Geolocation } from '@capacitor/geolocation';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -13,79 +13,108 @@ import { environment } from '../../../environments/environment';
 export class RoleSelectionPage implements OnInit {
   userEmail: string | null = null;
   map!: mapboxgl.Map;
+  viajeActivo: any = null;  // Guarda el viaje activo del pasajero
+  conductorMarker: mapboxgl.Marker | null = null;
 
   constructor(
     private router: Router,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private db: AngularFireDatabase
   ) {}
 
-  ngOnInit() {
-    this.afAuth.authState.subscribe(user => {
-      this.userEmail = user ? user.email : 'Usuario';
-    });
-
-    this.checkPermissionsAndLoadMap();
-  }
-
-  async checkPermissionsAndLoadMap() {
-    if (this.isRunningOnMobile()) {
-      const hasPermission = await this.checkLocationPermission();
-
-      if (hasPermission) {
-        this.loadMapWithCapacitor();
+  async ngOnInit() {
+    this.afAuth.authState.subscribe(async (user) => {
+      if (user) {
+        this.userEmail = user.email;
+        const userId = user.uid;
+        await this.verificarViajeActivo(userId); // Llamada a verificar el viaje activo
       } else {
-        console.warn('Permission denied or not granted');
+        this.userEmail = 'Usuario';
       }
-    } else {
-      this.loadMapWithBrowserGeolocation();
-    }
+    });
   }
 
-  isRunningOnMobile(): boolean {
-    return !!navigator.userAgent.match(/Android|iPhone|iPad|iPod/i);
-  }
-
-  async checkLocationPermission(): Promise<boolean> {
-    const permission = await Geolocation.requestPermissions();
-    return permission.location === 'granted';
-  }
-
-  async loadMapWithCapacitor() {
-    (mapboxgl as any).accessToken = environment.accessToken;
-
-    try {
-      const position = await Geolocation.getCurrentPosition();
-      const coords = [position.coords.longitude, position.coords.latitude] as [number, number];
-
-      this.initializeMap(coords);
-    } catch (error) {
-      console.error('Error loading map or getting location:', error);
-    }
-  }
-
-  loadMapWithBrowserGeolocation() {
-    (mapboxgl as any).accessToken = environment.accessToken;
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = [position.coords.longitude, position.coords.latitude] as [number, number];
-        this.initializeMap(coords);
-      },
-      (error) => {
-        console.error('Error getting browser location:', error);
+  async verificarViajeActivo(userId: string) {
+    const viajeActivoRef = this.db.object(`usuarios/${userId}/viajeActivo`);
+    viajeActivoRef.valueChanges().subscribe((viaje: any) => {
+      this.viajeActivo = viaje;
+      if (viaje && viaje.ruta) {
+        // Cargar el mapa y la ruta del viaje aceptado
+        this.inicializarMapa(viaje.ruta);
       }
-    );
+    });
   }
 
-  initializeMap(coords: [number, number]) {
+  inicializarMapa(rutaCoordenadas: [number, number][]) {
+    (mapboxgl as any).accessToken = environment.accessToken;
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: coords,
+      center: rutaCoordenadas[0], // Centrar en el primer punto de la ruta
       zoom: 14,
     });
 
-    new mapboxgl.Marker().setLngLat(coords).addTo(this.map);
+    this.map.on('load', () => {
+      this.map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: rutaCoordenadas,
+          },
+          properties: {},
+        },
+      });
+
+      this.map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#1DB954',
+          'line-width': 4,
+        },
+      });
+    });
+  }
+
+  async cancelarViaje() {
+    if (this.viajeActivo) {
+      const viajeId = this.viajeActivo.viajeId;
+  
+      // Incrementar el número de asientos disponibles en Firebase
+      const viajeRef = this.db.object(`viajes/${viajeId}`);
+      await viajeRef.update({
+        asientosDisponibles: this.viajeActivo.asientosDisponibles + 1,
+      });
+  
+      // Buscar y eliminar al pasajero de la lista de pasajeros usando el email
+      const pasajerosRef = this.db.list(`viajes/${viajeId}/pasajeros`);
+      pasajerosRef.query.once('value', (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const pasajeroData = childSnapshot.val();
+          if (pasajeroData.email === this.userEmail) {
+            pasajerosRef.remove(childSnapshot.key!); // Eliminar usando el key encontrado
+            return true; // Romper el bucle al encontrar el pasajero
+          }
+          return false;
+        });
+      });
+  
+      // Eliminar el viaje activo del perfil del usuario en Firebase
+      const userId = (await this.afAuth.currentUser)?.uid;
+      if (userId) {
+        await this.db.object(`usuarios/${userId}/viajeActivo`).remove();
+      }
+  
+      this.viajeActivo = null; // Limpiar el viaje activo en la UI
+      alert('El viaje ha sido cancelado y el asiento está nuevamente disponible.');
+    }
   }
 
   selectConductor() {
@@ -93,10 +122,20 @@ export class RoleSelectionPage implements OnInit {
   }
 
   selectPasajero() {
-    this.router.navigate(['/pasajero']);
+    if (this.viajeActivo) {
+      alert('Ya tienes un viaje activo. Cancélalo para poder seleccionar otro.');
+    } else {
+      this.router.navigate(['/pasajero']);
+    }
   }
 
   goToProfile() {
     this.router.navigate(['/perfil']);
+  }
+
+  recargarMapa() {
+    if (this.viajeActivo && this.viajeActivo.ruta) {
+      this.inicializarMapa(this.viajeActivo.ruta);
+    }
   }
 }

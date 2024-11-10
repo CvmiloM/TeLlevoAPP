@@ -67,24 +67,28 @@ export class PasajeroPage implements OnInit, OnDestroy {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-
+  
       const nuevosAsientos = viaje.asientosDisponibles - 1;
-
+  
       const pasajerosRef = this.db.list(`viajes/${viaje.key}/pasajeros`);
       pasajerosRef.push({ email: this.userEmail, ubicacion: ubicacionPasajero });
-
+  
+      // Actualizar el número de asientos disponibles en el viaje
       this.db.object(`viajes/${viaje.key}`).update({
         asientosDisponibles: nuevosAsientos,
       });
-
-      if (nuevosAsientos === 0) {
-        this.selectedViaje = null;
+  
+      // Guardar el viaje activo en el perfil del usuario en Firebase
+      const userId = (await this.afAuth.currentUser)?.uid;
+      if (userId) {
+        await this.db.object(`usuarios/${userId}/viajeActivo`).set({
+          ...viaje,
+          viajeId: viaje.key,  // Agrega el ID del viaje para referencia futura
+          ubicacionPasajero,
+        });
       }
-
-      await this.guardarViajeEnStorage(viaje, ubicacionPasajero);
-      this.mostrarToast('¡Has aceptado el viaje correctamente!');
-      
-      // Redirigir a role-selection
+  
+      // Redirigir a role-selection después de aceptar el viaje
       this.router.navigate(['/role-selection']);
     }
   }

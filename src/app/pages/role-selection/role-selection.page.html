@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="dark">
-    <ion-title></ion-title>
+    <ion-title>Role Selection</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="goToProfile()">
         <ion-icon name="person-circle-outline"></ion-icon>
@@ -12,25 +12,29 @@
 <ion-content color="dark">
   <div class="role-selection-container">
     <h1>Bienvenido, {{ userEmail }}</h1> <!-- Muestra el correo del usuario -->
-    
-    <div class="role-card conductor-card" (click)="selectConductor()">
-      <ion-icon name="car-sport-outline"></ion-icon>
-      <h2>Conductor</h2>
-      <p>Ofrece viajes y gestiona rutas y horarios para otros estudiantes.</p>
-      <ion-button expand="full" color="success">Seleccionar Conductor</ion-button>
+
+    <!-- Mostrar ruta del viaje y opción para cancelar si hay un viaje activo -->
+    <div *ngIf="viajeActivo; else roleSelection">
+      <h2>Ruta del Viaje Aceptado</h2>
+      <div id="map" style="height: 300px;"></div>
+      <ion-button expand="block" color="tertiary" (click)="recargarMapa()">Recargar Mapa</ion-button>
+      <ion-button expand="block" color="danger" (click)="cancelarViaje()">Cancelar Viaje</ion-button>
     </div>
-    
-    <div class="role-card pasajero-card" (click)="selectPasajero()">
-      <ion-icon name="person-outline"></ion-icon>
-      <h2>Pasajero</h2>
-      <p>Busca viajes disponibles y elige la ruta que te convenga.</p>
-      <ion-button expand="full" color="primary">Seleccionar Pasajero</ion-button>
-    </div>
-    
-    <!-- Contenedor para el mapa -->
-    <div class="location-section">
-      <h3>Ubicación Actual</h3>
-      <div id="map" style="height: 300px;"></div> <!-- Contenedor del mapa -->
-    </div>
+
+    <ng-template #roleSelection>
+      <div class="role-card conductor-card" (click)="selectConductor()">
+        <ion-icon name="car-sport-outline"></ion-icon>
+        <h2>Conductor</h2>
+        <p>Ofrece viajes y gestiona rutas y horarios para otros estudiantes.</p>
+        <ion-button expand="full" color="success">Seleccionar Conductor</ion-button>
+      </div>
+
+      <div class="role-card pasajero-card" (click)="selectPasajero()">
+        <ion-icon name="person-outline"></ion-icon>
+        <h2>Pasajero</h2>
+        <p>Busca viajes disponibles y elige la ruta que te convenga.</p>
+        <ion-button expand="full" color="primary">Seleccionar Pasajero</ion-button>
+      </div>
+    </ng-template>
   </div>
 </ion-content>
