@@ -7,7 +7,8 @@ import { environment } from '../../../environments/environment';
 import { Geolocation } from '@capacitor/geolocation';
 import { Storage } from '@ionic/storage-angular';
 import { ToastController } from '@ionic/angular';
-import { Router } from '@angular/router'; // Importación de Router
+import { Router } from '@angular/router';
+import { NotificacionesService } from '../../services/notificaciones.service'; // Importar NotificacionesService
 
 @Component({
   selector: 'app-pasajero',
@@ -26,7 +27,8 @@ export class PasajeroPage implements OnInit, OnDestroy {
     private afAuth: AngularFireAuth,
     private storage: Storage,
     private toastController: ToastController,
-    private router: Router // Añadido Router
+    private router: Router,
+    private notificacionesService: NotificacionesService // Inyectar NotificacionesService
   ) {}
 
   async ngOnInit() {
@@ -44,7 +46,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
       .subscribe((data) => {
         this.viajes = data
           .map((action) => ({ key: action.key, ...action.payload.val() as any }))
-          .filter((viaje) => viaje.asientosDisponibles > 0 && viaje.estado !== 'cancelado' && viaje.estado !== 'en curso'); // Filtrar viajes cancelados y en curso
+          .filter((viaje) => viaje.asientosDisponibles > 0 && viaje.estado !== 'cancelado' && viaje.estado !== 'en curso');
         console.log('Viajes actualizados:', this.viajes);
       });
   }
@@ -83,10 +85,18 @@ export class PasajeroPage implements OnInit, OnDestroy {
       if (userId) {
         await this.db.object(`usuarios/${userId}/viajeActivo`).set({
           ...viaje,
-          viajeId: viaje.key,  // Agrega el ID del viaje para referencia futura
+          viajeId: viaje.key,
           ubicacionPasajero,
         });
       }
+
+      // Enviar notificación al conductor
+      const conductorId = viaje.conductorId; // Asegúrate de que `conductorId` esté en el objeto `viaje`
+      await this.notificacionesService.notificarConductorPasajeroAceptaViaje(
+        viaje.key,
+        conductorId,
+        this.userEmail!
+      );
   
       // Redirigir a role-selection después de aceptar el viaje
       this.router.navigate(['/role-selection']);
@@ -136,7 +146,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
             type: 'LineString',
             coordinates: rutaCoordenadas,
           },
-          properties: {}, // Asegurarse de incluir properties vacíos
+          properties: {},
         },
       });
 

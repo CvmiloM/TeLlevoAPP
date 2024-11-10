@@ -1,10 +1,16 @@
 <ion-header>
   <ion-toolbar color="dark">
-    <ion-title>Role Selection</ion-title>
+    <ion-title></ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="goToProfile()">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
+
+      <ion-button (click)="goToNotificaciones()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <span *ngIf="nuevasNotificaciones" class="notification-dot"></span>
+      </ion-button>
+
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

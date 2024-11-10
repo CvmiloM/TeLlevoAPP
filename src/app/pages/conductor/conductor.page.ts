@@ -6,6 +6,7 @@ import { AlertController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
+import { NotificacionesService } from '../../services/notificaciones.service';
 
 @Component({
   selector: 'app-conductor',
@@ -17,6 +18,7 @@ export class ConductorPage implements OnInit {
   viajeActivo: any = null;
   userId: string | null = null;
   map!: mapboxgl.Map;
+  userEmail: string | null = null;
   passengerMarkers: { [email: string]: mapboxgl.Marker } = {};
 
   constructor(
@@ -24,7 +26,8 @@ export class ConductorPage implements OnInit {
     private storage: Storage,
     private router: Router,
     private alertController: AlertController,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private notificacionesService: NotificacionesService
   ) {}
 
   async ngOnInit() {
@@ -32,6 +35,7 @@ export class ConductorPage implements OnInit {
     this.afAuth.authState.subscribe((user) => {
       if (user) {
         this.userId = user.uid;
+        this.userEmail = user.email;
         this.cargarViajes();
       }
     });
@@ -48,8 +52,8 @@ export class ConductorPage implements OnInit {
 
   async cargarPasajeros() {
     if (this.viajeActivo) {
-      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).valueChanges().subscribe((pasajeros: any[]) => {
-        this.pasajeros = pasajeros || [];
+      this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).snapshotChanges().subscribe((pasajerosSnapshot: any[]) => {
+        this.pasajeros = pasajerosSnapshot.map((action) => ({ id: action.key, ...action.payload.val() }));
       });
     }
   }
@@ -102,21 +106,20 @@ export class ConductorPage implements OnInit {
   }
 
   agregarMarcadoresPasajeros() {
-    Object.values(this.passengerMarkers).forEach(marker => marker.remove());
+    Object.values(this.passengerMarkers).forEach((marker) => marker.remove());
     this.passengerMarkers = {};
 
-    this.pasajeros.forEach(pasajero => {
+    this.pasajeros.forEach((pasajero) => {
       const { email, ubicacion } = pasajero;
       if (ubicacion) {
         const marker = new mapboxgl.Marker()
           .setLngLat([ubicacion.lng, ubicacion.lat])
           .setPopup(
-            new mapboxgl.Popup({ offset: 25 })
-              .setHTML(
-                `<div style="background-color: #333; color: #fff; padding: 5px; border-radius: 5px; font-size: 14px;">
-                   Pasajero: ${email}
-                 </div>`
-              )
+            new mapboxgl.Popup({ offset: 25 }).setHTML(
+              `<div style="background-color: #333; color: #fff; padding: 5px; border-radius: 5px; font-size: 14px;">
+                 Pasajero: ${email}
+               </div>`
+            )
           )
           .addTo(this.map);
 
@@ -129,15 +132,43 @@ export class ConductorPage implements OnInit {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
       await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
+
+      for (let pasajero of this.pasajeros) {
+        if (this.userEmail) {
+          await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
+            this.viajeActivo.id,
+            pasajero.id,
+            this.userEmail
+          );
+        }
+      }
+
       this.viajeActivo = null;
       this.pasajeros = [];
       this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
     }
   }
 
+  async marcarComoEnCurso() {
+    if (this.viajeActivo) {
+      await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
+
+      for (let pasajero of this.pasajeros) {
+        if (this.userEmail) {
+          await this.notificacionesService.notificarPasajeroConductorEnMarcha(
+            this.viajeActivo.id,
+            pasajero.id,
+            this.userEmail
+          );
+        }
+      }
+
+      this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
+    }
+  }
+
   async crearViaje() {
     if (this.viajeActivo) {
-      // Mostrar alerta si ya hay un viaje activo
       await this.presentAlert('No puedes crear un viaje', 'No puedes crear un nuevo viaje mientras tienes uno activo.');
     } else {
       this.router.navigate(['/crear-viaje']);
@@ -145,10 +176,12 @@ export class ConductorPage implements OnInit {
   }
 
   presentAlert(header: string, message: string) {
-    this.alertController.create({
-      header,
-      message,
-      buttons: ['OK'],
-    }).then(alert => alert.present());
+    this.alertController
+      .create({
+        header,
+        message,
+        buttons: ['OK'],
+      })
+      .then((alert) => alert.present());
   }
 }

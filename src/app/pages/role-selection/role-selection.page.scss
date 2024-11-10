@@ -34,6 +34,16 @@ h1 {
   animation: fadeIn 0.6s ease-in-out;
 }
 
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: red;
+  border-radius: 50%;
+}
+
 /* Estilos de las tarjetas */
 .role-card {
   width: 90%;

@@ -4,6 +4,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
+import { NotificacionesService } from '../../services/notificaciones.service';
 
 @Component({
   selector: 'app-role-selection',
@@ -12,22 +13,26 @@ import { environment } from '../../../environments/environment';
 })
 export class RoleSelectionPage implements OnInit {
   userEmail: string | null = null;
+  userId: string | null = null;
   map!: mapboxgl.Map;
-  viajeActivo: any = null;  // Guarda el viaje activo del pasajero
+  viajeActivo: any = null;
   conductorMarker: mapboxgl.Marker | null = null;
+  nuevasNotificaciones: boolean = false; // Bandera para el punto rojo
 
   constructor(
     private router: Router,
     private afAuth: AngularFireAuth,
-    private db: AngularFireDatabase
+    private db: AngularFireDatabase,
+    private notificacionesService: NotificacionesService
   ) {}
 
   async ngOnInit() {
     this.afAuth.authState.subscribe(async (user) => {
       if (user) {
         this.userEmail = user.email;
-        const userId = user.uid;
-        await this.verificarViajeActivo(userId); // Llamada a verificar el viaje activo
+        this.userId = user.uid;
+        await this.verificarViajeActivo(this.userId);
+        this.verificarNotificaciones();
       } else {
         this.userEmail = 'Usuario';
       }
@@ -39,10 +44,19 @@ export class RoleSelectionPage implements OnInit {
     viajeActivoRef.valueChanges().subscribe((viaje: any) => {
       this.viajeActivo = viaje;
       if (viaje && viaje.ruta) {
-        // Cargar el mapa y la ruta del viaje aceptado
         this.inicializarMapa(viaje.ruta);
       }
     });
+  }
+
+  verificarNotificaciones() {
+    if (this.userId) {
+      this.db.list(`usuarios/${this.userId}/notificaciones`)
+        .valueChanges()
+        .subscribe((notificaciones: any[]) => {
+          this.nuevasNotificaciones = notificaciones && notificaciones.length > 0;
+        });
+    }
   }
 
   inicializarMapa(rutaCoordenadas: [number, number][]) {
@@ -50,7 +64,7 @@ export class RoleSelectionPage implements OnInit {
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: rutaCoordenadas[0], // Centrar en el primer punto de la ruta
+      center: rutaCoordenadas[0],
       zoom: 14,
     });
 
@@ -86,53 +100,45 @@ export class RoleSelectionPage implements OnInit {
   async cancelarViaje() {
     if (this.viajeActivo) {
       const viajeId = this.viajeActivo.viajeId;
-  
-      // Buscar y eliminar al pasajero específico de la lista de pasajeros
+      const conductorId = this.viajeActivo.conductorId;
+
       const pasajerosRef = this.db.list(`viajes/${viajeId}/pasajeros`);
       let pasajeroEliminado = false;
-  
-      // Remover pasajero de la lista de pasajeros
+
       await pasajerosRef.query.once('value', (snapshot) => {
         snapshot.forEach((childSnapshot) => {
           const pasajeroData = childSnapshot.val();
           if (pasajeroData.email === this.userEmail) {
-            // Eliminar al pasajero de la lista
             pasajerosRef.remove(childSnapshot.key!);
             pasajeroEliminado = true;
-            return true; // Romper el bucle al encontrar y eliminar el pasajero
+            return true;
           }
           return false;
         });
       });
-  
-      // Solo si el pasajero fue eliminado, recalcular los asientos disponibles
+
       if (pasajeroEliminado) {
         const viajeRef = this.db.object(`viajes/${viajeId}`);
-  
-        // Obtenemos el número actual de pasajeros y recalculamos los asientos disponibles
         const pasajerosSnapshot = await pasajerosRef.query.once('value');
         const numeroPasajerosActual = pasajerosSnapshot.numChildren();
-        const asientosTotales = this.viajeActivo.asientos; // Asumiendo que tienes el total de asientos en `this.viajeActivo`
-  
-        // Actualizar los asientos disponibles en el viaje
+        const asientosTotales = this.viajeActivo.asientos;
+
         await viajeRef.update({
           asientosDisponibles: asientosTotales - numeroPasajerosActual,
         });
       }
-  
-      // Eliminar el viaje activo del perfil del usuario en Firebase
+
+      await this.notificacionesService.notificarConductorPasajeroCancelaViaje(viajeId, conductorId, this.userEmail!);
+
       const userId = (await this.afAuth.currentUser)?.uid;
       if (userId) {
         await this.db.object(`usuarios/${userId}/viajeActivo`).remove();
       }
-  
-      this.viajeActivo = null; // Limpiar el viaje activo en la UI
+
+      this.viajeActivo = null;
       alert('El viaje ha sido cancelado y el asiento está nuevamente disponible.');
     }
   }
-  
-  
-  
 
   selectConductor() {
     this.router.navigate(['/conductor']);
@@ -148,6 +154,11 @@ export class RoleSelectionPage implements OnInit {
 
   goToProfile() {
     this.router.navigate(['/perfil']);
+  }
+
+  goToNotificaciones() {
+    this.router.navigate(['/notificaciones']);
+    this.nuevasNotificaciones = false; // Reiniciar bandera al visitar notificaciones
   }
 
   recargarMapa() {

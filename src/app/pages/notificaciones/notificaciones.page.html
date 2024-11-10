@@ -1,13 +1,27 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>notificaciones</ion-title>
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-title>Notificaciones</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">notificaciones</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content color="dark">
+  <ion-list>
+    <!-- Mostrar mensaje si no hay notificaciones -->
+    <ion-item *ngIf="notificaciones.length === 0">
+      <ion-label color="light" text-center>No tienes notificaciones</ion-label>
+    </ion-item>
+
+    <!-- Listado de notificaciones -->
+    <ion-item *ngFor="let notificacion of notificaciones">
+      <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
+      <ion-label>
+        <h2>{{ notificacion.mensaje }}</h2>
+        <p>{{ notificacion.timestamp | date:'short' }}</p>
+      </ion-label>
+      <ion-badge *ngIf="notificacion.tipo === 'aceptado'" color="success">Aceptado</ion-badge>
+      <ion-badge *ngIf="notificacion.tipo === 'cancelado_pasajero'" color="danger">Cancelado por pasajero</ion-badge>
+      <ion-badge *ngIf="notificacion.tipo === 'cancelado_conductor'" color="danger">Cancelado por conductor</ion-badge>
+      <ion-badge *ngIf="notificacion.tipo === 'en_marcha'" color="primary">En marcha</ion-badge>
+    </ion-item>
+  </ion-list>
 </ion-content>
