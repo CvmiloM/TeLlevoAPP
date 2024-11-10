@@ -63,3 +63,41 @@ ion-content {
   color: #aaaaaa;
   font-size: 0.9em;
 }
+
+/* Estilos adicionales para la lista de pasajeros */
+.pasajeros-card {
+  background-color: #292929;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.pasajero-item {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  background-color: #333333;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.pasajero-item ion-avatar {
+  margin-right: 10px;
+}
+
+.pasajero-item h2 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: bold;
+  color: #1db954;
+}
+
+.pasajero-item p {
+  font-size: 0.85rem;
+  color: #aaaaaa;
+}
+
+.pasajero-item ion-icon {
+  font-size: 1.5rem;
+  color: #1db954;
+}
