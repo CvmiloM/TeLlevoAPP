@@ -33,6 +33,16 @@ ion-content {
       color: #ffffff; /* Texto blanco en los inputs */
     }
 
+    .toast-success {
+      --background: #28a745; /* Color verde */
+      --color: #ffffff; /* Texto blanco */
+      font-weight: bold;
+      text-align: center;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
    
   
     ion-button {

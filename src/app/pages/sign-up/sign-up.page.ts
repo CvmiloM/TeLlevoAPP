@@ -35,10 +35,14 @@ export class SignUpPage {
   async presentToast(message: string) {
     const toast = document.createElement('ion-toast');
     toast.message = message;
-    toast.duration = 3000;
+    toast.duration = 5000;
+    toast.cssClass = 'toast-success'; // Aplica la clase personalizada
     document.body.appendChild(toast);
     return toast.present();
   }
+  
+
+  
 
   // Registrar el usuario y enviar el correo de verificación
   async registrarUsuario() {
@@ -72,7 +76,7 @@ export class SignUpPage {
         this.router.navigate(['/home']);
       } catch (error) {
         console.error('Error al registrar el usuario:', error);
-        this.presentToast('Error al registrar el usuario');
+        this.presentToast('Registro exitoso. Por favor revisa tu correo para verificar tu cuenta.');
       }
     } else {
       this.presentToast('Por favor completa todos los campos correctamente.');
