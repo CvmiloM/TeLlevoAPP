@@ -1,0 +1,48 @@
+.notification-list {
+    padding: 0 10px;
+  }
+  
+  .no-notifications {
+    font-weight: 500;
+    color: #b0b0b0;
+    text-align: center;
+  }
+  
+  .notification-item {
+    border-radius: 10px;
+    margin-bottom: 8px;
+    padding: 10px;
+    background-color: #333;
+    --ion-item-background: transparent;
+  }
+  
+  .notification-text h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .notification-text p {
+    font-size: 14px;
+    color: #a0a0a0;
+    margin-top: 4px;
+  }
+  
+  .notification-badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  
+  .list-md {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background: transparent;
+}

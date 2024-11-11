@@ -1,27 +1,48 @@
 <ion-header>
   <ion-toolbar color="dark">
     <ion-title>Notificaciones</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="notifications" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="dark">
-  <ion-list>
+  <ion-list class="notification-list">
     <!-- Mostrar mensaje si no hay notificaciones -->
-    <ion-item *ngIf="notificaciones.length === 0">
-      <ion-label color="light" text-center>No tienes notificaciones</ion-label>
+    <ion-item *ngIf="notificaciones.length === 0" lines="none">
+      <ion-label color="medium" class="no-notifications" text-center>No tienes notificaciones</ion-label>
     </ion-item>
 
     <!-- Listado de notificaciones -->
-    <ion-item *ngFor="let notificacion of notificaciones">
+    <ion-item *ngFor="let notificacion of notificaciones" lines="inset" class="notification-item">
       <ion-icon slot="start" name="notifications-outline" color="primary"></ion-icon>
-      <ion-label>
-        <h2>{{ notificacion.mensaje }}</h2>
-        <p>{{ notificacion.timestamp | date:'short' }}</p>
+      <ion-label class="notification-text">
+        <h2 class="notification-title">{{ notificacion.mensaje }}</h2>
+        <p class="notification-time">{{ notificacion.timestamp | date:'short' }}</p>
       </ion-label>
-      <ion-badge *ngIf="notificacion.tipo === 'aceptado'" color="success">Aceptado</ion-badge>
-      <ion-badge *ngIf="notificacion.tipo === 'cancelado_pasajero'" color="danger">Cancelado por pasajero</ion-badge>
-      <ion-badge *ngIf="notificacion.tipo === 'cancelado_conductor'" color="danger">Cancelado por conductor</ion-badge>
-      <ion-badge *ngIf="notificacion.tipo === 'en_marcha'" color="primary">En marcha</ion-badge>
+      <ion-badge
+        *ngIf="notificacion.tipo === 'aceptado'"
+        color="success"
+        class="notification-badge"
+      >Aceptado</ion-badge>
+      <ion-badge
+        *ngIf="notificacion.tipo === 'cancelado_pasajero'"
+        color="danger"
+        class="notification-badge"
+      >Cancelado por pasajero</ion-badge>
+      <ion-badge
+        *ngIf="notificacion.tipo === 'cancelado_conductor'"
+        color="danger"
+        class="notification-badge"
+      >Cancelado por conductor</ion-badge>
+      <ion-badge
+        *ngIf="notificacion.tipo === 'en_marcha'"
+        color="primary"
+        class="notification-badge"
+      >En marcha</ion-badge>
     </ion-item>
   </ion-list>
 </ion-content>
