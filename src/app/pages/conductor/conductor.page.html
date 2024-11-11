@@ -2,14 +2,57 @@
   <ion-toolbar color="dark">
     <ion-title>Conductor</ion-title>
     <ion-buttons slot="end">
+      <!-- Botón de perfil -->
       <ion-button routerLink="/perfil">
         <ion-icon name="person-circle-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Botón de notificaciones -->
+      <ion-button (click)="abrirMenuNotificaciones()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge color="danger" *ngIf="notificacionesConductor.length > 0">{{ notificacionesConductor.length }}</ion-badge>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="dark" fullscreen>
+<!-- Menú de notificaciones -->
+<ion-menu side="start" menuId="notificacionesMenu" contentId="main-content">
+  <ion-header>
+    <ion-toolbar color="dark">
+      <ion-title>Notificaciones</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <ion-list class="notification-list">
+      <!-- Mostrar mensaje si no hay notificaciones -->
+      <ion-item *ngIf="notificacionesConductor.length === 0" lines="none">
+        <ion-label color="medium" class="no-notifications" text-center>No tienes notificaciones</ion-label>
+      </ion-item>
+
+      <!-- Listado de notificaciones -->
+      <ion-item *ngFor="let notificacion of notificacionesConductor" lines="inset" class="notification-item">
+        <ion-icon slot="start" name="notifications-outline" color="primary" class="notification-icon"></ion-icon>
+        <ion-label class="notification-content">
+          <h2 class="notification-title">{{ notificacion.mensaje }}</h2>
+          <p class="notification-time">{{ notificacion.timestamp | date:'short' }}</p>
+        </ion-label>
+        <ion-badge
+          *ngIf="notificacion.tipo === 'aceptado'"
+          color="success"
+          class="notification-badge accepted"
+        >Aceptado</ion-badge>
+        <ion-badge
+          *ngIf="notificacion.tipo === 'cancelado_pasajero'"
+          color="danger"
+          class="notification-badge cancelled"
+        >Cancelado por pasajero</ion-badge>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+<ion-content color="dark" id="main-content" fullscreen>
   <div class="content-container">
     <!-- Información del viaje activo -->
     <ion-card class="info-card" *ngIf="viajeActivo">
@@ -22,7 +65,7 @@
         <p>Asientos disponibles: {{ viajeActivo.asientosDisponibles }}</p>
         <p>Costo: {{ viajeActivo.costo }}</p>
         <ion-button expand="full" color="danger" (click)="cancelarViaje()">Cancelar Viaje</ion-button>
-        <ion-button expand="full" color="primary">Marcar como en curso</ion-button>
+        <ion-button expand="full" color="primary" (click)="marcarComoEnCurso()">Marcar como en curso</ion-button>
         <ion-button expand="full" color="secondary" (click)="visualizarMapa()">Visualizar Mapa</ion-button>
       </ion-card-content>
       <div id="mapa" style="width: 100%; height: 300px; margin-top: 15px;"></div>

@@ -1,48 +1,159 @@
+ion-content {
+  --background: #1b1b1b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content-container {
+  width: 90%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.info-card {
+  background: #2b2b2b;
+  color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+.card-title {
+  color: #ffffff;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.card-subtitle {
+  color: #aaaaaa;
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.action-buttons {
+  margin-top: 20px;
+}
+
+.custom-button {
+  --border-radius: 8px;
+  --background: #4caf50;
+  --color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+}
+
+.footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #aaaaaa;
+  font-size: 0.9em;
+}
+
+/* Estilos adicionales para la lista de pasajeros */
+.pasajeros-card {
+  background-color: #292929;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.pasajero-item {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  background-color: #333333;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.pasajero-item ion-avatar {
+  margin-right: 10px;
+}
+
+.pasajero-item h2 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: bold;
+  color: #1db954;
+}
+
+.pasajero-item p {
+  font-size: 0.85rem;
+  color: #aaaaaa;
+}
+
+.pasajero-item ion-icon {
+  font-size: 1.5rem;
+  color: #1db954;
+}
+
+.list-md {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background: transparent;
+}
+
+/* Estilos para el menú de notificaciones */
 .notification-list {
-    padding: 0 10px;
-  }
-  
-  .no-notifications {
-    font-weight: 500;
-    color: #b0b0b0;
-    text-align: center;
-  }
-  
-  .notification-item {
-    border-radius: 10px;
-    margin-bottom: 8px;
-    padding: 10px;
-    background-color: #333;
-    --ion-item-background: transparent;
-  }
-  
-  .notification-text h2 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-  }
-  
-  .notification-text p {
-    font-size: 14px;
-    color: #a0a0a0;
-    margin-top: 4px;
-  }
-  
-  .notification-badge {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-  
-  .list-md {
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    background: transparent;
+  padding: 0 10px;
+  background-color: transparent;
+}
+
+.no-notifications {
+  font-weight: 500;
+  color: #b0b0b0;
+  text-align: center;
+}
+
+.notification-item {
+  border-radius: 10px;
+  margin-bottom: 8px;
+  padding: 10px;
+  background-color: #333;
+  --ion-item-background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.notification-text h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.notification-text p {
+  font-size: 14px;
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.notification-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.notification-badge.accepted {
+  background-color: #4caf50; /* Verde para aceptado */
+}
+
+.notification-badge.cancelled {
+  background-color: #e53935; /* Rojo para cancelado */
+}
+
+.notification-badge.in-progress {
+  background-color: #ff9800; /* Naranja para en progreso */
 }

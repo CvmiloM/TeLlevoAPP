@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, MenuController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
@@ -20,6 +20,7 @@ export class ConductorPage implements OnInit {
   map!: mapboxgl.Map;
   userEmail: string | null = null;
   passengerMarkers: { [email: string]: mapboxgl.Marker } = {};
+  notificacionesConductor: any[] = []; // Para almacenar las notificaciones filtradas
 
   constructor(
     private db: AngularFireDatabase,
@@ -27,7 +28,8 @@ export class ConductorPage implements OnInit {
     private router: Router,
     private alertController: AlertController,
     private afAuth: AngularFireAuth,
-    private notificacionesService: NotificacionesService
+    private notificacionesService: NotificacionesService,
+    private menuController: MenuController // Agregar controlador de menú
   ) {}
 
   async ngOnInit() {
@@ -37,8 +39,29 @@ export class ConductorPage implements OnInit {
         this.userId = user.uid;
         this.userEmail = user.email;
         this.cargarViajes();
+        this.cargarNotificacionesConductor(); // Cargar notificaciones filtradas para el conductor
       }
     });
+  }
+
+  // Método para cargar notificaciones filtradas para el conductor
+  cargarNotificacionesConductor() {
+    if (this.userId) {
+      this.db.list(`usuarios/${this.userId}/notificaciones`)
+        .valueChanges()
+        .subscribe((notificaciones: any[]) => {
+          this.notificacionesConductor = notificaciones.filter(
+            (notificacion) => 
+              notificacion.tipo === 'aceptado' || notificacion.tipo === 'cancelado_pasajero'
+          );
+        });
+    }
+  }
+
+  // Método para abrir el menú de notificaciones
+  abrirMenuNotificaciones() {
+    this.menuController.enable(true, 'notificacionesMenu'); // Habilita el menú de notificaciones
+    this.menuController.open('notificacionesMenu'); // Abre el menú de notificaciones
   }
 
   async cargarViajes() {
@@ -133,6 +156,7 @@ export class ConductorPage implements OnInit {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
       await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
 
+      // Notificar a cada pasajero que el viaje ha sido cancelado
       for (let pasajero of this.pasajeros) {
         if (this.userEmail) {
           await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
@@ -153,6 +177,7 @@ export class ConductorPage implements OnInit {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
 
+      // Notificar a cada pasajero que el viaje está en marcha
       for (let pasajero of this.pasajeros) {
         if (this.userEmail) {
           await this.notificacionesService.notificarPasajeroConductorEnMarcha(

@@ -32,12 +32,6 @@ ion-content {
   margin-top: 5px;
 }
 
-.toggle-item {
-  background: #2d2d2d;
-  border-radius: 8px;
-  margin: 20px 0;
-}
-
 .action-buttons {
   margin-top: 20px;
 }
@@ -50,11 +44,6 @@ ion-content {
   text-transform: uppercase;
   margin-bottom: 10px;
   box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
-}
-
-.custom-button[color="light"] {
-  --background: #ffffff;
-  --color: #000000;
 }
 
 .footer {
@@ -110,6 +99,67 @@ ion-content {
   padding-left: 0;
   padding-right: 0;
   padding-top: 8px;
-  padding-bottom: 8px; 
+  padding-bottom: 8px;
   background: transparent;
+}
+
+/* Estilos para el menú de notificaciones */
+.notification-list {
+  padding: 0 10px;
+  background-color: #1b1b1b;
+  width: 90%; /* Aumenta el ancho para cubrir más espacio en la pantalla */
+  max-height: 80vh; /* Ajusta el alto máximo para que sea más visible */
+  border-radius: 12px;
+  overflow-y: auto; /* Permite desplazarse si hay muchas notificaciones */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  margin: 10px auto; /* Centrar el menú */
+}
+
+.no-notifications {
+  font-weight: 500;
+  color: #b0b0b0;
+  text-align: center;
+}
+
+.notification-item {
+  border-radius: 10px;
+  margin-bottom: 8px;
+  padding: 10px;
+  background-color: #fffcfc;
+  --ion-item-background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.notification-text h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff; /* Blanco para el título de la notificación */
+  margin: 0;
+}
+
+.notification-text p {
+  font-size: 14px;
+  color: #ffffff; /* Blanco para el texto de la notificación */
+  margin-top: 4px;
+}
+
+.notification-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.notification-badge.accepted {
+  background-color: #4caf50; /* Verde para aceptado */
+}
+
+.notification-badge.cancelled {
+  background-color: #e53935; /* Rojo para cancelado */
+}
+
+.notification-badge.in-progress {
+  background-color: #ff9800; /* Naranja para en progreso */
 }
