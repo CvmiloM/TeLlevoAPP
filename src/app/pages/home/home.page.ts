@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';       // Servicio de Autenticación
 import { StorageService } from '../../services/storage.service'; // Servicio de Storage
@@ -8,12 +8,25 @@ import { StorageService } from '../../services/storage.service'; // Servicio de 
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage {
+export class HomePage implements OnInit {
   email: string = '';
   password: string = '';
   showPassword: boolean = false; // Variable para controlar la visibilidad de la contraseña
 
-  constructor(private authService: AuthService, private storageService: StorageService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private storageService: StorageService, 
+    private router: Router
+  ) {}
+
+  async ngOnInit() {
+    // Intentar cargar la sesión desde el almacenamiento local si no hay conexión
+    const usuarioGuardado = await this.storageService.getItem('usuario_actual');
+    if (usuarioGuardado) {
+      // Redirigir directamente a la página de selección de rol si hay un usuario guardado
+      this.router.navigate(['/role-selection']);
+    }
+  }
 
   async onSubmit() {
     try {

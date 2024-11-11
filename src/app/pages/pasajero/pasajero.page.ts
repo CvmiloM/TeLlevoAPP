@@ -39,6 +39,23 @@ export class PasajeroPage implements OnInit, OnDestroy {
       }
     });
 
+    // Intentar cargar el viaje activo desde el almacenamiento si no hay conexión
+    const viajeGuardado = await this.storage.get('viaje_activo');
+    if (viajeGuardado) {
+      this.selectedViaje = viajeGuardado;
+      this.mostrarRutaEnMapa(this.selectedViaje.ruta);
+    } else {
+      this.escucharViajes(); // Si hay conexión, escuchar los viajes en tiempo real
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.viajesSubscription) {
+      this.viajesSubscription.unsubscribe();
+    }
+  }
+
+  escucharViajes() {
     // Escuchar todos los viajes desde Firebase
     this.viajesSubscription = this.db
       .list('viajes')
@@ -49,12 +66,6 @@ export class PasajeroPage implements OnInit, OnDestroy {
           .filter((viaje) => viaje.asientosDisponibles > 0 && viaje.estado !== 'cancelado' && viaje.estado !== 'en curso');
         console.log('Viajes actualizados:', this.viajes);
       });
-  }
-
-  ngOnDestroy() {
-    if (this.viajesSubscription) {
-      this.viajesSubscription.unsubscribe();
-    }
   }
 
   seleccionarViaje(viaje: any) {
@@ -89,6 +100,9 @@ export class PasajeroPage implements OnInit, OnDestroy {
           ubicacionPasajero,
         });
       }
+
+      // Guardar el viaje en almacenamiento local para uso sin conexión
+      await this.storage.set('viaje_activo', { ...viaje, ubicacionPasajero });
 
       // Enviar notificación al conductor
       const conductorId = viaje.conductorId; // Asegúrate de que `conductorId` esté en el objeto `viaje`
