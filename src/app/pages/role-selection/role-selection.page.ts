@@ -5,6 +5,7 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { NotificacionesService } from '../../services/notificaciones.service';
+import { Storage } from '@ionic/storage-angular';
 
 @Component({
   selector: 'app-role-selection',
@@ -17,16 +18,18 @@ export class RoleSelectionPage implements OnInit {
   map!: mapboxgl.Map;
   viajeActivo: any = null;
   conductorMarker: mapboxgl.Marker | null = null;
-  nuevasNotificaciones: boolean = false; // Bandera para el punto rojo
+  nuevasNotificaciones: boolean = false;
 
   constructor(
     private router: Router,
     private afAuth: AngularFireAuth,
     private db: AngularFireDatabase,
-    private notificacionesService: NotificacionesService
+    private notificacionesService: NotificacionesService,
+    private storage: Storage
   ) {}
 
   async ngOnInit() {
+    await this.storage.create();
     this.afAuth.authState.subscribe(async (user) => {
       if (user) {
         this.userEmail = user.email;
@@ -35,18 +38,32 @@ export class RoleSelectionPage implements OnInit {
         this.verificarNotificaciones();
       } else {
         this.userEmail = 'Usuario';
+        await this.cargarViajeDesdeStorage();
       }
     });
   }
 
   async verificarViajeActivo(userId: string) {
     const viajeActivoRef = this.db.object(`usuarios/${userId}/viajeActivo`);
-    viajeActivoRef.valueChanges().subscribe((viaje: any) => {
+    viajeActivoRef.valueChanges().subscribe(async (viaje: any) => {
       this.viajeActivo = viaje;
       if (viaje && viaje.ruta) {
         this.inicializarMapa(viaje.ruta);
+        await this.guardarViajeEnStorage(viaje);
       }
     });
+  }
+
+  async cargarViajeDesdeStorage() {
+    const viajeGuardado = await this.storage.get('viaje_activo');
+    if (viajeGuardado) {
+      this.viajeActivo = viajeGuardado;
+      this.inicializarMapa(this.viajeActivo.ruta);
+    }
+  }
+
+  async guardarViajeEnStorage(viaje: any) {
+    await this.storage.set('viaje_activo', viaje);
   }
 
   verificarNotificaciones() {
@@ -136,6 +153,7 @@ export class RoleSelectionPage implements OnInit {
       }
 
       this.viajeActivo = null;
+      await this.storage.remove('viaje_activo'); // Eliminar el viaje guardado localmente
       alert('El viaje ha sido cancelado y el asiento está nuevamente disponible.');
     }
   }
@@ -158,7 +176,7 @@ export class RoleSelectionPage implements OnInit {
 
   goToNotificaciones() {
     this.router.navigate(['/notificaciones']);
-    this.nuevasNotificaciones = false; // Reiniciar bandera al visitar notificaciones
+    this.nuevasNotificaciones = false;
   }
 
   recargarMapa() {
