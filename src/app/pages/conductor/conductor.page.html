@@ -13,7 +13,6 @@
   </ion-toolbar>
 </ion-header>
 
-<!-- Menú de notificaciones -->
 <ion-menu side="start" menuId="notificacionesMenu" contentId="main-content">
   <ion-header>
     <ion-toolbar color="dark">
@@ -71,7 +70,6 @@
               <h2 style="font-weight: bold;">{{ pasajero.email }}</h2>
               <p>Ubicación: Lat {{ pasajero.ubicacion.lat }}, Lng {{ pasajero.ubicacion.lng }}</p>
             </ion-label>
-            <ion-icon slot="end" name="trash-outline" color="danger" (click)="eliminarPasajero(pasajero)"></ion-icon>
           </ion-item>
         </ion-list>
       </ion-card-content>

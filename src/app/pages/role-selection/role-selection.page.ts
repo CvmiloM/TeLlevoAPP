@@ -33,7 +33,7 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
       if (user) {
         this.userEmail = user.email;
         this.userId = user.uid;
-        this.verificarViajeActivo(); // Verificar si el viaje ha sido cancelado o removido
+        this.verificarViajeActivo();
       } else {
         this.userEmail = 'Usuario';
         await this.cargarViajeDesdeStorage();
@@ -48,7 +48,6 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
   }
 
   verificarViajeActivo() {
-    // Escuchar cambios en el viaje activo del usuario en Firebase
     if (this.userId) {
       this.viajeActivoSubscription = this.db
         .object(`usuarios/${this.userId}/viajeActivo`)
@@ -58,11 +57,9 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
             this.viajeActivo = viajeActivo;
             await this.guardarViajeEnStorage(viajeActivo);
           } else {
-            // Si el viaje activo fue eliminado, redirigir al usuario a role-selection
             this.viajeActivo = null;
             await this.storage.remove('viaje_activo');
-            alert('El conductor ha cancelado tu participación en el viaje.');
-            this.router.navigate(['/role-selection']);
+            this.router.navigate(['/role-selection']);  // Redirige sin mostrar mensaje
           }
         });
     }
@@ -123,10 +120,9 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
       const viajeId = this.viajeActivo.viajeId;
       const viajeActivoRef = this.db.object(`usuarios/${this.userId}/viajeActivo`);
       await viajeActivoRef.remove();
-      await this.storage.remove('viaje_activo'); // Eliminar el viaje guardado localmente
+      await this.storage.remove('viaje_activo');
 
       this.viajeActivo = null;
-      alert('Has cancelado tu participación en el viaje.');
     }
   }
 

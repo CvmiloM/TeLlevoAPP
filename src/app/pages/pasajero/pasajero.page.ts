@@ -70,8 +70,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
           if (!viajeActivo && this.selectedViaje) {
             this.selectedViaje = null;
             this.storage.remove('viaje_activo');
-            this.mostrarToast('Tu participación en el viaje ha sido cancelada.');
-            this.router.navigate(['/role-selection']);
+            this.router.navigate(['/role-selection']);  // Redirige sin mostrar mensaje
           }
         });
     }
@@ -130,16 +129,6 @@ export class PasajeroPage implements OnInit, OnDestroy {
 
       this.router.navigate(['/role-selection']);
     }
-  }
-
-  async mostrarToast(mensaje: string) {
-    const toast = await this.toastController.create({
-      message: mensaje,
-      duration: 2000,
-      color: 'success',
-      position: 'bottom',
-    });
-    toast.present();
   }
 
   mostrarRutaEnMapa(rutaCoordenadas: [number, number][]) {

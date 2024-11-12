@@ -159,18 +159,6 @@ export class ConductorPage implements OnInit, OnDestroy {
     });
   }
 
-  async eliminarPasajero(pasajero: any) {
-    if (this.viajeActivo && pasajero.id) {
-      await this.db.object(`viajes/${this.viajeActivo.id}/pasajeros/${pasajero.id}`).remove();
-      await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
-        this.viajeActivo.id,
-        pasajero.id,
-        this.userEmail!
-      );
-      this.cargarPasajeros();
-    }
-  }
-
   async cancelarViaje() {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
