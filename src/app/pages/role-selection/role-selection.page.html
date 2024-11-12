@@ -5,21 +5,14 @@
       <ion-button (click)="goToProfile()">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
-
-      <ion-button (click)="goToNotificaciones()">
-        <ion-icon name="notifications-outline"></ion-icon>
-        <span *ngIf="nuevasNotificaciones" class="notification-dot"></span>
-      </ion-button>
-
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content color="dark">
   <div class="role-selection-container">
-    <h1>Bienvenido, {{ userEmail }}</h1> <!-- Muestra el correo del usuario -->
+    <h1>Bienvenido, {{ userEmail }}</h1>
 
-    <!-- Mostrar ruta del viaje y opción para cancelar si hay un viaje activo -->
     <div *ngIf="viajeActivo; else roleSelection">
       <h2>Ruta del Viaje Aceptado</h2>
       <div id="map" style="height: 300px;"></div>

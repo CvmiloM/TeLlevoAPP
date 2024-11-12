@@ -2,12 +2,9 @@
   <ion-toolbar color="dark">
     <ion-title>Conductor</ion-title>
     <ion-buttons slot="end">
-      <!-- Botón de perfil -->
       <ion-button routerLink="/perfil">
         <ion-icon name="person-circle-outline"></ion-icon>
       </ion-button>
-
-      <!-- Botón de notificaciones -->
       <ion-button (click)="abrirMenuNotificaciones()">
         <ion-icon name="notifications-outline"></ion-icon>
         <ion-badge color="danger" *ngIf="notificacionesConductor.length > 0">{{ notificacionesConductor.length }}</ion-badge>
@@ -25,28 +22,17 @@
   </ion-header>
   <ion-content>
     <ion-list class="notification-list">
-      <!-- Mostrar mensaje si no hay notificaciones -->
       <ion-item *ngIf="notificacionesConductor.length === 0" lines="none">
         <ion-label color="medium" class="no-notifications" text-center>No tienes notificaciones</ion-label>
       </ion-item>
-
-      <!-- Listado de notificaciones -->
       <ion-item *ngFor="let notificacion of notificacionesConductor" lines="inset" class="notification-item">
         <ion-icon slot="start" name="notifications-outline" color="primary" class="notification-icon"></ion-icon>
         <ion-label class="notification-content">
           <h2 class="notification-title">{{ notificacion.mensaje }}</h2>
           <p class="notification-time">{{ notificacion.timestamp | date:'short' }}</p>
         </ion-label>
-        <ion-badge
-          *ngIf="notificacion.tipo === 'aceptado'"
-          color="success"
-          class="notification-badge accepted"
-        >Aceptado</ion-badge>
-        <ion-badge
-          *ngIf="notificacion.tipo === 'cancelado_pasajero'"
-          color="danger"
-          class="notification-badge cancelled"
-        >Cancelado por pasajero</ion-badge>
+        <ion-badge *ngIf="notificacion.tipo === 'aceptado'" color="success" class="notification-badge accepted">Aceptado</ion-badge>
+        <ion-badge *ngIf="notificacion.tipo === 'cancelado_pasajero'" color="danger" class="notification-badge cancelled">Cancelado por pasajero</ion-badge>
       </ion-item>
     </ion-list>
   </ion-content>
@@ -54,7 +40,6 @@
 
 <ion-content color="dark" id="main-content" fullscreen>
   <div class="content-container">
-    <!-- Información del viaje activo -->
     <ion-card class="info-card" *ngIf="viajeActivo">
       <ion-card-header>
         <ion-card-title class="card-title">Viaje Activo</ion-card-title>
@@ -71,7 +56,6 @@
       <div id="mapa" style="width: 100%; height: 300px; margin-top: 15px;"></div>
     </ion-card>
 
-    <!-- Lista de pasajeros que han aceptado el viaje -->
     <ion-card class="info-card pasajeros-card" *ngIf="pasajeros.length > 0">
       <ion-card-header>
         <ion-card-title class="card-title">Pasajeros Aceptados</ion-card-title>
@@ -87,22 +71,16 @@
               <h2 style="font-weight: bold;">{{ pasajero.email }}</h2>
               <p>Ubicación: Lat {{ pasajero.ubicacion.lat }}, Lng {{ pasajero.ubicacion.lng }}</p>
             </ion-label>
-            <ion-icon slot="end" name="location-outline" color="tertiary"></ion-icon>
+            <ion-icon slot="end" name="trash-outline" color="danger" (click)="eliminarPasajero(pasajero)"></ion-icon>
           </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
 
     <div class="action-buttons">
-      <ion-button expand="block" (click)="crearViaje()" color="success" class="custom-button">
-        Crear Viaje
-      </ion-button>
-      <ion-button expand="block" routerLink="/historial" color="success" class="custom-button">
-        Ver Historial
-      </ion-button>
-      <ion-button expand="block" routerLink="/role-selection" color="primary" class="custom-button">
-        Volver
-      </ion-button>
+      <ion-button expand="block" (click)="crearViaje()" color="success" class="custom-button">Crear Viaje</ion-button>
+      <ion-button expand="block" routerLink="/historial" color="success" class="custom-button">Ver Historial</ion-button>
+      <ion-button expand="block" routerLink="/role-selection" color="primary" class="custom-button">Volver</ion-button>
     </div>
 
     <div class="footer">

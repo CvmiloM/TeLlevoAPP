@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Storage } from '@ionic/storage-angular';
 import { Router } from '@angular/router';
@@ -7,20 +7,22 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { NotificacionesService } from '../../services/notificaciones.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-conductor',
   templateUrl: './conductor.page.html',
   styleUrls: ['./conductor.page.scss'],
 })
-export class ConductorPage implements OnInit {
+export class ConductorPage implements OnInit, OnDestroy {
   pasajeros: any[] = [];
   viajeActivo: any = null;
   userId: string | null = null;
   map!: mapboxgl.Map;
   userEmail: string | null = null;
   passengerMarkers: { [email: string]: mapboxgl.Marker } = {};
-  notificacionesConductor: any[] = []; // Para almacenar las notificaciones filtradas
+  notificacionesConductor: any[] = [];
+  notificacionesSubscription: Subscription | undefined;
 
   constructor(
     private db: AngularFireDatabase,
@@ -29,7 +31,7 @@ export class ConductorPage implements OnInit {
     private alertController: AlertController,
     private afAuth: AngularFireAuth,
     private notificacionesService: NotificacionesService,
-    private menuController: MenuController // Agregar controlador de menú
+    private menuController: MenuController
   ) {}
 
   async ngOnInit() {
@@ -39,29 +41,36 @@ export class ConductorPage implements OnInit {
         this.userId = user.uid;
         this.userEmail = user.email;
         this.cargarViajes();
-        this.cargarNotificacionesConductor(); // Cargar notificaciones filtradas para el conductor
+        this.cargarNotificacionesConductor();
       }
     });
   }
 
-  // Método para cargar notificaciones filtradas para el conductor
+  ngOnDestroy() {
+    if (this.notificacionesSubscription) {
+      this.notificacionesSubscription.unsubscribe();
+    }
+  }
+
   cargarNotificacionesConductor() {
     if (this.userId) {
-      this.db.list(`usuarios/${this.userId}/notificaciones`)
+      this.notificacionesSubscription = this.db
+        .list(`usuarios/${this.userId}/notificaciones`)
         .valueChanges()
         .subscribe((notificaciones: any[]) => {
-          this.notificacionesConductor = notificaciones.filter(
-            (notificacion) => 
-              notificacion.tipo === 'aceptado' || notificacion.tipo === 'cancelado_pasajero'
-          );
+          this.notificacionesConductor = notificaciones
+            .filter(
+              (notificacion) =>
+                notificacion.tipo === 'aceptado' || notificacion.tipo === 'cancelado_pasajero'
+            )
+            .sort((a, b) => b.timestamp - a.timestamp); // Ordenar de más reciente a más antigua
         });
     }
   }
 
-  // Método para abrir el menú de notificaciones
   abrirMenuNotificaciones() {
-    this.menuController.enable(true, 'notificacionesMenu'); // Habilita el menú de notificaciones
-    this.menuController.open('notificacionesMenu'); // Abre el menú de notificaciones
+    this.menuController.enable(true, 'notificacionesMenu');
+    this.menuController.open('notificacionesMenu');
   }
 
   async cargarViajes() {
@@ -89,7 +98,6 @@ export class ConductorPage implements OnInit {
 
   async inicializarMapa(rutaCoordenadas: [number, number][]) {
     (mapboxgl as any).accessToken = environment.accessToken;
-
     this.map = new mapboxgl.Map({
       container: 'mapa',
       style: 'mapbox://styles/mapbox/streets-v11',
@@ -151,12 +159,23 @@ export class ConductorPage implements OnInit {
     });
   }
 
+  async eliminarPasajero(pasajero: any) {
+    if (this.viajeActivo && pasajero.id) {
+      await this.db.object(`viajes/${this.viajeActivo.id}/pasajeros/${pasajero.id}`).remove();
+      await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
+        this.viajeActivo.id,
+        pasajero.id,
+        this.userEmail!
+      );
+      this.cargarPasajeros();
+    }
+  }
+
   async cancelarViaje() {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
       await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
 
-      // Notificar a cada pasajero que el viaje ha sido cancelado
       for (let pasajero of this.pasajeros) {
         if (this.userEmail) {
           await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
@@ -177,7 +196,6 @@ export class ConductorPage implements OnInit {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
 
-      // Notificar a cada pasajero que el viaje está en marcha
       for (let pasajero of this.pasajeros) {
         if (this.userEmail) {
           await this.notificacionesService.notificarPasajeroConductorEnMarcha(

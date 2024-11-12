@@ -1,30 +1,29 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
-import { NotificacionesService } from '../../services/notificaciones.service';
 import { Storage } from '@ionic/storage-angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-role-selection',
   templateUrl: './role-selection.page.html',
   styleUrls: ['./role-selection.page.scss'],
 })
-export class RoleSelectionPage implements OnInit {
+export class RoleSelectionPage implements OnInit, OnDestroy {
   userEmail: string | null = null;
   userId: string | null = null;
   map!: mapboxgl.Map;
   viajeActivo: any = null;
   conductorMarker: mapboxgl.Marker | null = null;
-  nuevasNotificaciones: boolean = false;
+  viajeActivoSubscription: Subscription | undefined;
 
   constructor(
     private router: Router,
     private afAuth: AngularFireAuth,
     private db: AngularFireDatabase,
-    private notificacionesService: NotificacionesService,
     private storage: Storage
   ) {}
 
@@ -34,8 +33,7 @@ export class RoleSelectionPage implements OnInit {
       if (user) {
         this.userEmail = user.email;
         this.userId = user.uid;
-        await this.verificarViajeActivo(this.userId);
-        this.verificarNotificaciones();
+        this.verificarViajeActivo(); // Verificar si el viaje ha sido cancelado o removido
       } else {
         this.userEmail = 'Usuario';
         await this.cargarViajeDesdeStorage();
@@ -43,15 +41,31 @@ export class RoleSelectionPage implements OnInit {
     });
   }
 
-  async verificarViajeActivo(userId: string) {
-    const viajeActivoRef = this.db.object(`usuarios/${userId}/viajeActivo`);
-    viajeActivoRef.valueChanges().subscribe(async (viaje: any) => {
-      this.viajeActivo = viaje;
-      if (viaje && viaje.ruta) {
-        this.inicializarMapa(viaje.ruta);
-        await this.guardarViajeEnStorage(viaje);
-      }
-    });
+  ngOnDestroy() {
+    if (this.viajeActivoSubscription) {
+      this.viajeActivoSubscription.unsubscribe();
+    }
+  }
+
+  verificarViajeActivo() {
+    // Escuchar cambios en el viaje activo del usuario en Firebase
+    if (this.userId) {
+      this.viajeActivoSubscription = this.db
+        .object(`usuarios/${this.userId}/viajeActivo`)
+        .valueChanges()
+        .subscribe(async (viajeActivo) => {
+          if (viajeActivo) {
+            this.viajeActivo = viajeActivo;
+            await this.guardarViajeEnStorage(viajeActivo);
+          } else {
+            // Si el viaje activo fue eliminado, redirigir al usuario a role-selection
+            this.viajeActivo = null;
+            await this.storage.remove('viaje_activo');
+            alert('El conductor ha cancelado tu participación en el viaje.');
+            this.router.navigate(['/role-selection']);
+          }
+        });
+    }
   }
 
   async cargarViajeDesdeStorage() {
@@ -64,16 +78,6 @@ export class RoleSelectionPage implements OnInit {
 
   async guardarViajeEnStorage(viaje: any) {
     await this.storage.set('viaje_activo', viaje);
-  }
-
-  verificarNotificaciones() {
-    if (this.userId) {
-      this.db.list(`usuarios/${this.userId}/notificaciones`)
-        .valueChanges()
-        .subscribe((notificaciones: any[]) => {
-          this.nuevasNotificaciones = notificaciones && notificaciones.length > 0;
-        });
-    }
   }
 
   inicializarMapa(rutaCoordenadas: [number, number][]) {
@@ -117,44 +121,12 @@ export class RoleSelectionPage implements OnInit {
   async cancelarViaje() {
     if (this.viajeActivo) {
       const viajeId = this.viajeActivo.viajeId;
-      const conductorId = this.viajeActivo.conductorId;
-
-      const pasajerosRef = this.db.list(`viajes/${viajeId}/pasajeros`);
-      let pasajeroEliminado = false;
-
-      await pasajerosRef.query.once('value', (snapshot) => {
-        snapshot.forEach((childSnapshot) => {
-          const pasajeroData = childSnapshot.val();
-          if (pasajeroData.email === this.userEmail) {
-            pasajerosRef.remove(childSnapshot.key!);
-            pasajeroEliminado = true;
-            return true;
-          }
-          return false;
-        });
-      });
-
-      if (pasajeroEliminado) {
-        const viajeRef = this.db.object(`viajes/${viajeId}`);
-        const pasajerosSnapshot = await pasajerosRef.query.once('value');
-        const numeroPasajerosActual = pasajerosSnapshot.numChildren();
-        const asientosTotales = this.viajeActivo.asientos;
-
-        await viajeRef.update({
-          asientosDisponibles: asientosTotales - numeroPasajerosActual,
-        });
-      }
-
-      await this.notificacionesService.notificarConductorPasajeroCancelaViaje(viajeId, conductorId, this.userEmail!);
-
-      const userId = (await this.afAuth.currentUser)?.uid;
-      if (userId) {
-        await this.db.object(`usuarios/${userId}/viajeActivo`).remove();
-      }
+      const viajeActivoRef = this.db.object(`usuarios/${this.userId}/viajeActivo`);
+      await viajeActivoRef.remove();
+      await this.storage.remove('viaje_activo'); // Eliminar el viaje guardado localmente
 
       this.viajeActivo = null;
-      await this.storage.remove('viaje_activo'); // Eliminar el viaje guardado localmente
-      alert('El viaje ha sido cancelado y el asiento está nuevamente disponible.');
+      alert('Has cancelado tu participación en el viaje.');
     }
   }
 
@@ -172,11 +144,6 @@ export class RoleSelectionPage implements OnInit {
 
   goToProfile() {
     this.router.navigate(['/perfil']);
-  }
-
-  goToNotificaciones() {
-    this.router.navigate(['/notificaciones']);
-    this.nuevasNotificaciones = false;
   }
 
   recargarMapa() {

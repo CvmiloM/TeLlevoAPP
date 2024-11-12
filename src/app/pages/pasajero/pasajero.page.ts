@@ -8,7 +8,7 @@ import { Geolocation } from '@capacitor/geolocation';
 import { Storage } from '@ionic/storage-angular';
 import { ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { NotificacionesService } from '../../services/notificaciones.service'; // Importar NotificacionesService
+import { NotificacionesService } from '../../services/notificaciones.service';
 
 @Component({
   selector: 'app-pasajero',
@@ -18,9 +18,11 @@ import { NotificacionesService } from '../../services/notificaciones.service'; /
 export class PasajeroPage implements OnInit, OnDestroy {
   viajes: any[] = [];
   viajesSubscription: Subscription | undefined;
+  viajeActivoSubscription: Subscription | undefined;
   map!: mapboxgl.Map;
   selectedViaje: any = null;
   userEmail: string | null = null;
+  userId: string | null = null;
 
   constructor(
     private db: AngularFireDatabase,
@@ -28,7 +30,7 @@ export class PasajeroPage implements OnInit, OnDestroy {
     private storage: Storage,
     private toastController: ToastController,
     private router: Router,
-    private notificacionesService: NotificacionesService // Inyectar NotificacionesService
+    private notificacionesService: NotificacionesService
   ) {}
 
   async ngOnInit() {
@@ -36,16 +38,17 @@ export class PasajeroPage implements OnInit, OnDestroy {
     this.afAuth.authState.subscribe((user) => {
       if (user) {
         this.userEmail = user.email;
+        this.userId = user.uid;
+        this.verificarViajeActivo();
       }
     });
 
-    // Intentar cargar el viaje activo desde el almacenamiento si no hay conexión
     const viajeGuardado = await this.storage.get('viaje_activo');
     if (viajeGuardado) {
       this.selectedViaje = viajeGuardado;
       this.mostrarRutaEnMapa(this.selectedViaje.ruta);
     } else {
-      this.escucharViajes(); // Si hay conexión, escuchar los viajes en tiempo real
+      this.escucharViajes();
     }
   }
 
@@ -53,10 +56,28 @@ export class PasajeroPage implements OnInit, OnDestroy {
     if (this.viajesSubscription) {
       this.viajesSubscription.unsubscribe();
     }
+    if (this.viajeActivoSubscription) {
+      this.viajeActivoSubscription.unsubscribe();
+    }
+  }
+
+  verificarViajeActivo() {
+    if (this.userId) {
+      this.viajeActivoSubscription = this.db
+        .object(`usuarios/${this.userId}/viajeActivo`)
+        .valueChanges()
+        .subscribe((viajeActivo) => {
+          if (!viajeActivo && this.selectedViaje) {
+            this.selectedViaje = null;
+            this.storage.remove('viaje_activo');
+            this.mostrarToast('Tu participación en el viaje ha sido cancelada.');
+            this.router.navigate(['/role-selection']);
+          }
+        });
+    }
   }
 
   escucharViajes() {
-    // Escuchar todos los viajes desde Firebase
     this.viajesSubscription = this.db
       .list('viajes')
       .snapshotChanges()
@@ -80,18 +101,15 @@ export class PasajeroPage implements OnInit, OnDestroy {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-  
+
       const nuevosAsientos = viaje.asientosDisponibles - 1;
-  
       const pasajerosRef = this.db.list(`viajes/${viaje.key}/pasajeros`);
       pasajerosRef.push({ email: this.userEmail, ubicacion: ubicacionPasajero });
-  
-      // Actualizar el número de asientos disponibles en el viaje
+
       this.db.object(`viajes/${viaje.key}`).update({
         asientosDisponibles: nuevosAsientos,
       });
-  
-      // Guardar el viaje activo en el perfil del usuario en Firebase
+
       const userId = (await this.afAuth.currentUser)?.uid;
       if (userId) {
         await this.db.object(`usuarios/${userId}/viajeActivo`).set({
@@ -101,18 +119,15 @@ export class PasajeroPage implements OnInit, OnDestroy {
         });
       }
 
-      // Guardar el viaje en almacenamiento local para uso sin conexión
       await this.storage.set('viaje_activo', { ...viaje, ubicacionPasajero });
 
-      // Enviar notificación al conductor
-      const conductorId = viaje.conductorId; // Asegúrate de que `conductorId` esté en el objeto `viaje`
+      const conductorId = viaje.conductorId;
       await this.notificacionesService.notificarConductorPasajeroAceptaViaje(
         viaje.key,
         conductorId,
         this.userEmail!
       );
-  
-      // Redirigir a role-selection después de aceptar el viaje
+
       this.router.navigate(['/role-selection']);
     }
   }
@@ -122,23 +137,9 @@ export class PasajeroPage implements OnInit, OnDestroy {
       message: mensaje,
       duration: 2000,
       color: 'success',
-      position: 'bottom'
+      position: 'bottom',
     });
     toast.present();
-  }
-
-  async guardarViajeEnStorage(viaje: any, ubicacionPasajero: any) {
-    const viajeData = {
-      key: viaje.key,
-      destino: viaje.destino,
-      descripcion: viaje.descripcion,
-      costo: viaje.costo,
-      asientosDisponibles: viaje.asientosDisponibles - 1,
-      ubicacionPasajero,
-      email: this.userEmail,
-    };
-    await this.storage.set(`viaje_aceptado_${viaje.key}`, viajeData);
-    console.log('Viaje guardado en storage:', viajeData);
   }
 
   mostrarRutaEnMapa(rutaCoordenadas: [number, number][]) {
