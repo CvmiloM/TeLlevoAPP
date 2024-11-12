@@ -1,3 +1,5 @@
+// role-selection.page.ts
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
@@ -6,6 +8,7 @@ import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
 import { Storage } from '@ionic/storage-angular';
 import { Subscription } from 'rxjs';
+import { NotificacionesService } from '../../services/notificaciones.service';
 
 @Component({
   selector: 'app-role-selection',
@@ -24,7 +27,8 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
     private router: Router,
     private afAuth: AngularFireAuth,
     private db: AngularFireDatabase,
-    private storage: Storage
+    private storage: Storage,
+    private notificacionesService: NotificacionesService // Agregar el servicio de notificaciones
   ) {}
 
   async ngOnInit() {
@@ -118,9 +122,21 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
   async cancelarViaje() {
     if (this.viajeActivo) {
       const viajeId = this.viajeActivo.viajeId;
+      const conductorId = this.viajeActivo.conductorId; // Obtener el ID del conductor
+
+      // Eliminar el viaje activo del pasajero en la base de datos
       const viajeActivoRef = this.db.object(`usuarios/${this.userId}/viajeActivo`);
       await viajeActivoRef.remove();
       await this.storage.remove('viaje_activo');
+
+      // Enviar notificación al conductor de que el pasajero canceló el viaje
+      if (conductorId && this.userEmail) {
+        await this.notificacionesService.notificarConductorPasajeroCancelaViaje(
+          viajeId,
+          conductorId,
+          this.userEmail
+        );
+      }
 
       this.viajeActivo = null;
     }

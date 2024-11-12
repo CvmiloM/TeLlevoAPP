@@ -6,7 +6,6 @@ import { AlertController, MenuController } from '@ionic/angular';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import * as mapboxgl from 'mapbox-gl';
 import { environment } from '../../../environments/environment';
-import { NotificacionesService } from '../../services/notificaciones.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -30,7 +29,6 @@ export class ConductorPage implements OnInit, OnDestroy {
     private router: Router,
     private alertController: AlertController,
     private afAuth: AngularFireAuth,
-    private notificacionesService: NotificacionesService,
     private menuController: MenuController
   ) {}
 
@@ -164,16 +162,6 @@ export class ConductorPage implements OnInit, OnDestroy {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'cancelado' });
       await this.db.list(`viajes/${this.viajeActivo.id}/pasajeros`).remove();
 
-      for (let pasajero of this.pasajeros) {
-        if (this.userEmail) {
-          await this.notificacionesService.notificarPasajeroConductorCancelaViaje(
-            this.viajeActivo.id,
-            pasajero.id,
-            this.userEmail
-          );
-        }
-      }
-
       this.viajeActivo = null;
       this.pasajeros = [];
       this.presentAlert('Viaje cancelado', 'El viaje ha sido cancelado exitosamente.');
@@ -183,17 +171,6 @@ export class ConductorPage implements OnInit, OnDestroy {
   async marcarComoEnCurso() {
     if (this.viajeActivo) {
       await this.db.object(`viajes/${this.viajeActivo.id}`).update({ estado: 'en curso' });
-
-      for (let pasajero of this.pasajeros) {
-        if (this.userEmail) {
-          await this.notificacionesService.notificarPasajeroConductorEnMarcha(
-            this.viajeActivo.id,
-            pasajero.id,
-            this.userEmail
-          );
-        }
-      }
-
       this.presentAlert('Viaje en curso', 'El viaje ha sido marcado como en curso.');
     }
   }
