@@ -1,68 +1,68 @@
-
 ion-content {
-    --background: #1c1c1e; /* Fondo oscuro general */
-  
-    .form-slide {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh; /* Altura completa para centrar verticalmente */
-      text-align: center;
-      font-family: 'Roboto', sans-serif; /* Cambia la fuente */
-    }
-  
-    .title {
-      color: #ffffff;
-      font-size: 1.8rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-  
-    ion-item {
-      width: 100%;
-      max-width: 320px;
-      margin-bottom: 15px;
-      --background: #2a2a2b; /* Fondo gris oscuro */
-      --color: #ffffff; /* Texto blanco */
-      --highlight-color-focused: #00ff00; /* Color verde para el borde cuando está enfocado */
-      --highlight-color-invalid: red; /* Color rojo para el borde en caso de error */
-      --border-radius: 10px; /* Bordes redondeados */
-    }
-  
-    ion-input {
-      color: #ffffff; /* Texto blanco en los inputs */
-    }
-  
-    ion-button {
-      max-width: 320px;
-      border-radius: 8px; /* Bordes redondeados */
-      margin-bottom: 15px;
-      --color: #ffffff; /* Texto blanco */
-    }
-  
-    ion-icon {
-      color: #ffffff; /* Iconos blancos */
-    }
-  
-    p {
-      color: #ffffff; /* Texto blanco para "TIENES CUENTA?" */
-      font-size: 0.9rem;
-      margin-top: 10px;
-    }
-  
-    a {
-      color: #00ff00; /* Link en verde */
-      text-decoration: none;
-    }
-  
-    hr {
-      width: 100%; /* Ancho completo */
-      max-width: 320px; /* Alineado con el contenido */
-      border: 0;
-      border-top: 1px solid #ffffff; /* Línea blanca */
-      margin: 20px 0; /* Espacio superior e inferior */
-      opacity: 0.5; /* Transparencia de la línea */
-    }
+  --background: #001f3f; /* Fondo azul marino oscuro */
+
+  .form-slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Altura completa para centrar verticalmente */
+    text-align: center;
+    font-family: 'Roboto', sans-serif; /* Fuente */
   }
-  
+
+  .title {
+    color: #ffffff; /* Texto blanco */
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000, 1px 1px 0 #000000; /* Borde negro */
+  }
+
+  ion-item {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 15px;
+    --background: #003366; /* Fondo azul marino medio */
+    --color: #ffffff; /* Texto blanco */
+    --highlight-color-focused: #6699cc; /* Color azul claro para el borde cuando está enfocado */
+    --highlight-color-invalid: #ff4d4d; /* Color rojo para el borde en caso de error */
+    --border-radius: 10px; /* Bordes redondeados */
+  }
+
+  ion-input {
+    color: #ffffff; /* Texto blanco en los inputs */
+  }
+
+  ion-button {
+    max-width: 320px;
+    border-radius: 8px; /* Bordes redondeados */
+    margin-bottom: 15px;
+    --background: #004080; /* Fondo azul marino intenso */
+    --color: #ffffff; /* Texto blanco */
+  }
+
+  ion-icon {
+    color: #ffffff; /* Iconos blancos */
+  }
+
+  p {
+    color: #ffffff; /* Texto blanco para "¿No tienes una cuenta?" */
+    font-size: 0.9rem;
+    margin-top: 10px;
+  }
+
+  a {
+    color: #6699cc; /* Enlaces en azul claro */
+    text-decoration: none;
+  }
+
+  hr {
+    width: 100%; /* Ancho completo */
+    max-width: 320px; /* Alineado con el contenido */
+    border: 0;
+    border-top: 1px solid #ffffff; /* Línea blanca */
+    margin: 20px 0; /* Espacio superior e inferior */
+    opacity: 0.5; /* Transparencia de la línea */
+  }
+}

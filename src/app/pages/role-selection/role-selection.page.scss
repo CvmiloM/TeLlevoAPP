@@ -29,7 +29,7 @@ h1 {
   font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 1.2rem;
-  color: #ffd700; /* Color dorado */
+  color: #6699cc; /* Azul claro */
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
   animation: fadeIn 0.6s ease-in-out;
 }
@@ -48,7 +48,7 @@ h1 {
 .role-card {
   width: 90%;
   max-width: 350px;
-  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  background: linear-gradient(145deg, #001f3f, #003366); /* Fondo azul marino degradado */
   border-radius: 15px;
   padding: 1.5rem;
   margin: 0.5rem 0;
@@ -63,16 +63,16 @@ h1 {
 
 .role-card:hover {
   transform: scale(1.05);
-  background-color: #333333;
+  background-color: #004080;
 }
 
 /* Bordes de colores en las tarjetas */
 .conductor-card {
-  border-left: 5px solid #4caf50;
+  border-left: 5px solid #6699cc; /* Azul claro */
 }
 
 .pasajero-card {
-  border-left: 5px solid #6a1b9a;
+  border-left: 5px solid #336699; /* Azul más oscuro */
 }
 
 .role-card ion-icon {
@@ -110,6 +110,7 @@ h1 {
 
 /* Botones dentro de las tarjetas */
 .role-card ion-button {
+  --background: #336699; /* Azul medio */
   --border-radius: 8px;
   font-weight: bold;
   width: 100%;
@@ -143,7 +144,7 @@ h1 {
   color: #dcdcdc;
   width: 90%;
   max-width: 300px;
-  background-color: #1e1e1e;
+  background-color: #00264d; /* Azul marino más oscuro */
   padding: 0.8rem;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -165,13 +166,13 @@ h1 {
   font-size: 1.1rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #ffd700;
+  color: #6699cc; /* Azul claro */
   text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 }
 
 .location-section ion-icon {
   font-size: 2rem;
-  color: #ffd700;
+  color: #6699cc; /* Azul claro */
 }
 
 /* Mapa */

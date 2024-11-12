@@ -1,45 +1,50 @@
 .form-slide {
-    max-width: 400px;
-    margin: auto;
-    padding: 20px;
-    background-color: #222;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-  }
-  
-  .title {
-    text-align: center;
-    font-size: 1.8rem;
-    color: #fff;
-    margin-bottom: 20px;
-  }
-  
-  .custom-item {
-    background-color: #333;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .custom-button {
-    --background: #1DB954;
-    --color: #fff;
-    margin-top: 10px;
-    border-radius: 5px;
-  }
-  
-  .custom-text {
-    text-align: center;
-    margin-top: 10px;
-  }
-  
-  .custom-link {
-    color: #1DB954;
-    font-weight: bold;
-    text-decoration: none;
-  }
-  
-  .custom-link:hover {
-    text-decoration: underline;
-  }
-  
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+  background-color: #001f3f; /* Fondo azul marino oscuro */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+.title {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #ffffff; /* Texto blanco */
+  margin-bottom: 20px;
+}
+
+.custom-item {
+  background-color: #003366; /* Fondo azul marino medio */
+  border-radius: 5px;
+  margin-bottom: 15px;
+  --color: #ffffff; /* Texto blanco */
+}
+
+ion-input {
+  --color: #6699cc; /* Azul claro para el texto ingresado */
+}
+
+.custom-button {
+  --background: #004080; /* Fondo azul marino intenso */
+  --color: #ffffff; /* Texto blanco */
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+.custom-text {
+  text-align: center;
+  margin-top: 10px;
+  color: #ffffff; /* Texto blanco */
+}
+
+.custom-link {
+  color: #6699cc; /* Azul claro */
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.custom-link:hover {
+  text-decoration: underline;
+}
+

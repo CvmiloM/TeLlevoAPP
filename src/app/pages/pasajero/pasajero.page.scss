@@ -1,5 +1,5 @@
 ion-content {
-  --background: #1b1b1b;
+  --background: #001f3f; /* Fondo azul marino oscuro */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,16 +14,47 @@ ion-content {
 .info-card {
   background: #2b2b2b;
   color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  padding: 20px;
 }
 
-.card-title, .card-subtitle {
+.card-title {
   color: #ffffff;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.card-subtitle {
+  color: #aaaaaa;
+  text-align: center;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.action-buttons {
+  margin-top: 20px;
+}
+
+.custom-button {
+  --border-radius: 8px;
+  --background: #4caf50;
+  --color: #ffffff;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+}
+
+.footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #aaaaaa;
+  font-size: 0.9em;
 }
 
 .map-placeholder {
-  background: #2d2d2d;
+  background: #004080; /* Fondo azul marino oscuro */
   padding: 20px;
   text-align: center;
   border-radius: 8px;
@@ -32,7 +63,7 @@ ion-content {
 
 .map-icon {
   font-size: 32px;
-  color: #4caf50;
+  color: #6699cc; /* Azul claro */
   margin-bottom: 10px;
 }
 
@@ -41,7 +72,7 @@ ion-content {
 }
 
 .search-item {
-  background: #2b2b2b;
+  background: #003366; /* Fondo azul marino medio */
   padding: 10px;
   border-radius: 8px;
   display: flex;
@@ -55,13 +86,13 @@ ion-content {
 
 .search-item ion-input {
   --placeholder-color: #a0a0a0;
-  color: #000000;
+  color: #6699cc; /* Texto en azul claro */
 }
 
 .status-message {
   margin: 10px 0;
   text-align: center;
-  color: #ff4d4d;
+  color: #ff4d4d; /* Rojo para mensajes de estado */
   font-size: 14px;
 }
 
@@ -71,28 +102,29 @@ ion-content {
 
 .login-style-button {
   --border-radius: 8px;
-  --background: #4caf50;
+  --background: #004080; /* Azul marino intenso */
   --color: #ffffff;
   font-weight: bold;
   text-transform: uppercase;
   margin-bottom: 10px;
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .login-style-button[color="light"] {
   --background: #ffffff;
-  --color: #000000;
+  --color: #004080; /* Azul marino para el texto */
   box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
 }
+
 .no-asientos {
-  background-color: #333 !important; // Fondo gris para viajes sin asientos
-  color: #AAA !important; // Texto en gris claro para indicar no disponibilidad
+  background-color: #003366 !important; /* Fondo azul marino medio */
+  color: #a0a0a0 !important; /* Texto en gris claro */
 }
 
 .no-asientos h2 {
-  color: #AAA !important;
+  color: #a0a0a0 !important;
 }
 
 .no-asientos ion-icon {
-  color: #AAA !important;
+  color: #a0a0a0 !important;
 }

@@ -107,18 +107,12 @@ ion-content {
 .notification-list {
   padding: 0 10px;
   background-color: #1b1b1b;
-  width: 90%; /* Aumenta el ancho para cubrir más espacio en la pantalla */
-  max-height: 80vh; /* Ajusta el alto máximo para que sea más visible */
+  width: 90%;
+  max-height: 80vh;
   border-radius: 12px;
-  overflow-y: auto; /* Permite desplazarse si hay muchas notificaciones */
+  overflow-y: auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-  margin: 10px auto; /* Centrar el menú */
-}
-
-.no-notifications {
-  font-weight: 500;
-  color: #b0b0b0;
-  text-align: center;
+  margin: 10px auto;
 }
 
 .notification-item {
@@ -131,16 +125,16 @@ ion-content {
   align-items: center;
 }
 
-.notification-text h2 {
+.notification-title {
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff; /* Blanco para el título de la notificación */
+  color: #003366; /* Azul marino para el título de la notificación */
   margin: 0;
 }
 
-.notification-text p {
+.notification-time {
   font-size: 14px;
-  color: #ffffff; /* Blanco para el texto de la notificación */
+  color: #6699cc; /* Azul claro para el texto de la notificación */
   margin-top: 4px;
 }
 
