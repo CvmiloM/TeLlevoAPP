@@ -19,6 +19,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
   descripcion: string = '';
   asientos: number | null = null;
   costo: number | null = null;
+  patente: string = ''; // Nueva propiedad para la patente
   ubicacionInicial: [number, number] = [-74.5, 40];
   destinoCoords: [number, number] | null = null;
   suggestions: any[] = [];
@@ -80,14 +81,14 @@ export class CrearViajePage implements OnInit, OnDestroy {
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.destino}.json?access_token=${environment.accessToken}&autocomplete=true&limit=5`;
 
       fetch(url)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           this.suggestions = data.features.map((feature: any) => ({
             place_name: feature.place_name,
-            coordinates: feature.geometry.coordinates
+            coordinates: feature.geometry.coordinates,
           }));
         })
-        .catch(error => console.error('Error al buscar destino:', error));
+        .catch((error) => console.error('Error al buscar destino:', error));
     } else {
       this.suggestions = [];
     }
@@ -104,58 +105,70 @@ export class CrearViajePage implements OnInit, OnDestroy {
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${this.ubicacionInicial.join(',')};${destinoCoords.join(',')}?geometries=geojson&access_token=${environment.accessToken}`;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        const route = data.routes[0].geometry.coordinates;
+      const response = await fetch(url);
+      const data = await response.json();
+      const route = data.routes[0].geometry.coordinates;
 
-        const geojson: GeoJSON.Feature<GeoJSON.LineString> = {
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: route,
-            },
-            properties: {} // Asegúrate de que 'properties' esté presente
-        };
+      const geojson: GeoJSON.Feature<GeoJSON.LineString> = {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: route,
+        },
+        properties: {},
+      };
 
-        if (this.map.getSource('route')) {
-            (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
-        } else {
-            this.map.addSource('route', {
-                type: 'geojson',
-                data: geojson
-            });
+      if (this.map.getSource('route')) {
+        (this.map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
+      } else {
+        this.map.addSource('route', {
+          type: 'geojson',
+          data: geojson,
+        });
 
-            this.map.addLayer({
-                id: 'route',
-                type: 'line',
-                source: 'route',
-                layout: {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-                paint: {
-                    'line-color': '#1DB954',
-                    'line-width': 5
-                }
-            });
-        }
+        this.map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round',
+          },
+          paint: {
+            'line-color': '#1DB954',
+            'line-width': 5,
+          },
+        });
+      }
 
-        return route;
+      return route;
     } catch (error) {
-        console.error('Error al dibujar la ruta:', error);
-        return [];
+      console.error('Error al dibujar la ruta:', error);
+      return [];
     }
-}
+  }
+
+  validarPatente(): boolean {
+    // Validar formato de patente chilena (AA-BB-11 o AA-11-BB)
+    const regex = /^[A-Z]{2}-\d{2}-[A-Z]{2}$|^[A-Z]{2}-[A-Z]{2}-\d{2}$/;
+    return regex.test(this.patente);
+  }
 
   isComplete(): boolean {
-    return this.destino !== '' && this.descripcion !== '' && this.asientos !== null && this.costo !== null;
+    return (
+      this.destino !== '' &&
+      this.descripcion !== '' &&
+      this.asientos !== null &&
+      this.costo !== null &&
+      this.validarPatente()
+    );
   }
 
   async mostrarAlerta(mensaje: string) {
     const alert = await this.alertController.create({
       header: 'Información',
       message: mensaje,
-      buttons: ['OK']
+      buttons: ['OK'],
     });
     await alert.present();
   }
@@ -171,6 +184,11 @@ export class CrearViajePage implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.validarPatente()) {
+      await this.mostrarAlerta('Por favor ingrese una patente válida (formato chileno).');
+      return;
+    }
+
     if (this.isComplete() && this.userId) {
       const rutaCoordenadas = await this.dibujarRuta(this.destinoCoords!);
 
@@ -179,11 +197,12 @@ export class CrearViajePage implements OnInit, OnDestroy {
         descripcion: this.descripcion,
         asientos: this.asientos,
         costo: this.costo,
+        patente: this.patente, // Agregar patente
         ubicacionInicial: this.ubicacionInicial,
         destinoCoords: this.destinoCoords,
         asientosDisponibles: this.asientos,
         conductorId: this.userId,
-        estado: 'activo', // Establecer estado como activo
+        estado: 'activo',
         ruta: rutaCoordenadas,
       };
 
@@ -208,7 +227,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
   }
 
   async guardarViajeLocal(viajeData: any) {
-    let viajesLocales = await this.storage.get('viajes') || [];
+    let viajesLocales = (await this.storage.get('viajes')) || [];
     viajesLocales.push(viajeData);
     await this.storage.set('viajes', viajesLocales);
     console.log('Viaje guardado en Ionic Storage:', viajeData);
@@ -223,7 +242,7 @@ export class CrearViajePage implements OnInit, OnDestroy {
     }
     this.db.object(`usuarios/${this.userId}/profile`).update({
       level: this.userLevel,
-      experience: this.userExperience
+      experience: this.userExperience,
     });
   }
 }

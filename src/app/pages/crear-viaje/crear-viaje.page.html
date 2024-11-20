@@ -16,7 +16,15 @@
     </ion-card-header>
 
     <ion-card-content>
-   
+      <!-- Campo para la patente -->
+      <ion-item>
+        <ion-label position="stacked">Patente</ion-label>
+        <ion-input
+          [(ngModel)]="patente"
+          placeholder="Ejemplo: AB-12-CD"
+          maxlength="8"
+        ></ion-input>
+      </ion-item>
 
       <!-- Lista de sugerencias de destino -->
       <div class="destino-input-container">
