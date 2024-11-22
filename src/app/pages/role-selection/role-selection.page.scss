@@ -162,6 +162,45 @@ h1 {
   }
 }
 
+
+ion-card-content {
+  background-color: #3bb1ff83; /* Fondo oscuro */
+  border-radius: 10px; /* Bordes redondeados */
+  padding: 15px; /* Espaciado interno */
+  color: #ffffff; /* Texto en blanco */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6); /* Sombra para el contenedor */
+  margin: 10px; /* Separación alrededor del contenido */
+}
+
+ion-card-content p {
+  font-size: 1.1rem; /* Tamaño de fuente */
+  margin: 8px 0; /* Separación entre párrafos */
+  line-height: 1.5; /* Altura de línea */
+}
+
+ion-card-content p strong {
+  color: #0aff33; /* Color verde para el texto destacado */
+  font-weight: bold; /* Texto en negrita */
+}
+
+ion-card-content p:nth-child(even) {
+  background-color: #2d9affcc; /* Fondo alternativo para líneas pares */
+  border-radius: 5px; /* Bordes redondeados */
+  padding: 5px 10px; /* Espaciado interno para líneas alternas */
+}
+
+ion-card-content p:nth-child(odd) {
+  background-color: transparent; /* Fondo transparente para líneas impares */
+}
+
+ion-card-content p ion-icon {
+  margin-right: 5px; /* Espaciado entre íconos y texto */
+  color: #ffc107; /* Color amarillo para íconos */
+}
+
+
+
+
 .location-section h3 {
   font-size: 1.1rem;
   font-weight: bold;

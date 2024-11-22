@@ -14,7 +14,18 @@
     <h1>Bienvenido, {{ userEmail }}</h1>
 
     <div *ngIf="viajeActivo; else roleSelection">
-      <h2>Ruta del Viaje Aceptado</h2>
+      <h2>Ruta del Viaje</h2>
+      
+      
+      <ion-card-content>
+        <p><strong>Destino:</strong> {{ viajeActivo.destino }}</p>
+        <p><strong>Descripción:</strong> {{ viajeActivo.descripcion }}</p>
+        <p><strong>Patente:</strong> {{ viajeActivo.patente }}</p>
+        <p><strong>Costo:</strong> {{ viajeActivo.costo | currency }}</p>
+        
+      </ion-card-content>
+      
+
       <div id="map" style="height: 300px;"></div>
       <ion-button expand="block" color="tertiary" (click)="recargarMapa()">Recargar Mapa</ion-button>
       <ion-button expand="block" color="danger" (click)="cancelarViaje()">Cancelar Viaje</ion-button>
