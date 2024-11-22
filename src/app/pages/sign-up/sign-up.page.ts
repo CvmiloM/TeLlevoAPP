@@ -40,9 +40,6 @@ export class SignUpPage {
     document.body.appendChild(toast);
     return toast.present();
   }
-  
-
-  
 
   // Registrar el usuario y enviar el correo de verificación
   async registrarUsuario() {
@@ -50,33 +47,38 @@ export class SignUpPage {
       try {
         // Registrar usuario en Firebase Authentication
         const credenciales = await this.authService.register(this.email.trim(), this.password.trim());
-  
+
         // Enviar correo de verificación
         if (credenciales.user) {
           await credenciales.user.sendEmailVerification();
         }
-  
-        // Crear el objeto de usuario para guardar en Firestore
+
+        // Crear el objeto de usuario para guardar en Firestore y Ionic Storage
         const nuevoUsuario = {
           uid: credenciales.user?.uid,
           nombre: this.nombre.trim(),
           apellido: this.apellido.trim(),
           email: this.email.trim(),
-          emailVerified: false
+          password: this.password.trim(), // Agregamos la contraseña para uso offline
+          emailVerified: false,
         };
-  
+
         // Guardar el usuario en Firestore
         await this.authService.saveUserData(nuevoUsuario);
         console.log('Usuario registrado y guardado en Firestore:', nuevoUsuario);
-  
+
+        // Guardar el usuario en Ionic Storage para uso offline
+        await this.storageService.setItem('user', nuevoUsuario);
+        console.log('Usuario guardado en Ionic Storage:', nuevoUsuario);
+
         // Mensaje de éxito
         this.presentToast('Registro exitoso. Por favor revisa tu correo para verificar tu cuenta.');
-  
+
         // Redirigir a la página de inicio de sesión
         this.router.navigate(['/home']);
       } catch (error) {
         console.error('Error al registrar el usuario:', error);
-        this.presentToast('Registro exitoso. Por favor revisa tu correo para verificar tu cuenta.');
+        this.presentToast('Hubo un error al registrar el usuario. Inténtalo nuevamente.');
       }
     } else {
       this.presentToast('Por favor completa todos los campos correctamente.');

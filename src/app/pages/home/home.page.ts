@@ -30,13 +30,14 @@ export class HomePage implements OnInit {
 
   async onSubmit() {
     try {
-      // Iniciar sesión en Firebase Authentication
+      // Intentar iniciar sesión en Firebase Authentication
       const credenciales = await this.authService.login(this.email.trim(), this.password.trim());
 
       // Guardar sólo datos simples como uid, email en el storage
       const usuarioInfo = {
         uid: credenciales.user?.uid,
-        email: credenciales.user?.email
+        email: credenciales.user?.email,
+        password: this.password.trim() // Guardar la contraseña para inicio de sesión sin conexión
       };
 
       // Guardar el usuario actual en el storage
@@ -44,12 +45,21 @@ export class HomePage implements OnInit {
 
       // Redirigir a la página de selección de rol
       this.router.navigate(['/role-selection']);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
-    
-      // Verificar si el error tiene la propiedad 'message'
-      if (error instanceof Error) {
-        alert(error.message);  // Mostrar el mensaje del error
+
+      // Manejar errores de red para permitir inicio sin conexión
+      if (error.code === 'auth/network-request-failed') {
+        // Intentar validar con datos almacenados localmente
+        const usuarioGuardado = await this.storageService.getItem('usuario_actual');
+        if (usuarioGuardado && usuarioGuardado.email === this.email.trim() && usuarioGuardado.password === this.password.trim()) {
+          alert('Inicio de sesión sin conexión exitoso.');
+          this.router.navigate(['/role-selection']);
+        } else {
+          alert('No se encontró un usuario válido para iniciar sesión sin conexión.');
+        }
+      } else if (error.message) {
+        alert(error.message); // Mostrar el mensaje del error
       } else {
         alert('Ocurrió un error desconocido.');
       }
