@@ -21,6 +21,8 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
   conductorMarker: mapboxgl.Marker | null = null;
   nuevasNotificaciones: boolean = false;
   viajeActivoSubscription: Subscription | undefined;
+  viajeGuardado: any = null;
+
 
   constructor(
     private router: Router,
@@ -36,14 +38,19 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
       if (user) {
         this.userEmail = user.email;
         this.userId = user.uid;
-        this.verificarViajeActivo(); // Llama sin parámetro
-        this.verificarNotificaciones();
+        this.verificarViajeActivo(); // Lógica para viajes en línea
       } else {
         this.userEmail = 'Usuario';
-        await this.cargarViajeDesdeStorage();
+      }
+  
+      // Cargar el viaje guardado en Ionic Storage
+      const viaje = await this.storage.get('viaje_activo');
+      if (viaje) {
+        this.viajeGuardado = viaje;
       }
     });
   }
+  
 
   
 

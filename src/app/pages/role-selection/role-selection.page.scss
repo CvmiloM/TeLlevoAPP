@@ -250,3 +250,29 @@ ion-card-content p ion-icon {
     height: 200px;
   }
 }
+
+.viaje-guardado-container {
+  margin-top: 20px;
+  text-align: center;
+
+  ion-card {
+    margin: 10px;
+    border-radius: 12px;
+    background-color: #111;
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+
+    ion-card-header {
+      background-color: #1DB954;
+      color: #fff;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    ion-card-content {
+      font-size: 1rem;
+      color: #ddd;
+      text-align: left;
+    }
+  }
+}

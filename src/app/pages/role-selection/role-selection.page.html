@@ -47,4 +47,19 @@
       </div>
     </ng-template>
   </div>
+  <div *ngIf="viajeGuardado" class="viaje-guardado-container">
+    <h2>Información de tu Viaje</h2>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Ruta hacia {{ viajeGuardado.destino }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Descripción:</strong> {{ viajeGuardado.descripcion }}</p>
+        <p><strong>Patente:</strong> {{ viajeGuardado.patente }}</p>
+        <p><strong>Costo:</strong> {{ viajeGuardado.costo | currency }}</p>
+        <p><strong>Asientos Disponibles:</strong> {{ viajeGuardado.asientosDisponibles }}</p>
+        <p><strong>Ubicación Inicial:</strong> Lat: {{ viajeGuardado.ubicacionInicial[1] }}, Lng: {{ viajeGuardado.ubicacionInicial[0] }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

@@ -95,41 +95,78 @@ export class PasajeroPage implements OnInit, OnDestroy {
 
   async aceptarViaje(viaje: any) {
     if (this.userEmail) {
-      const position = await Geolocation.getCurrentPosition();
-      const ubicacionPasajero = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-      };
-
-      const nuevosAsientos = viaje.asientosDisponibles - 1;
-      const pasajerosRef = this.db.list(`viajes/${viaje.key}/pasajeros`);
-      pasajerosRef.push({ email: this.userEmail, ubicacion: ubicacionPasajero });
-
-      this.db.object(`viajes/${viaje.key}`).update({
-        asientosDisponibles: nuevosAsientos,
-      });
-
-      const userId = (await this.afAuth.currentUser)?.uid;
-      if (userId) {
-        await this.db.object(`usuarios/${userId}/viajeActivo`).set({
+      try {
+        // Obtener la ubicación actual del pasajero
+        const position = await Geolocation.getCurrentPosition();
+        const ubicacionPasajero = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+  
+        // Reducir la cantidad de asientos disponibles
+        const nuevosAsientos = viaje.asientosDisponibles - 1;
+        const pasajerosRef = this.db.list(`viajes/${viaje.key}/pasajeros`);
+        await pasajerosRef.push({ email: this.userEmail, ubicacion: ubicacionPasajero });
+  
+        // Actualizar Firebase con los nuevos asientos disponibles
+        await this.db.object(`viajes/${viaje.key}`).update({
+          asientosDisponibles: nuevosAsientos,
+        });
+  
+        // Guardar el viaje en la base de datos del usuario
+        const userId = (await this.afAuth.currentUser)?.uid;
+        if (userId) {
+          await this.db.object(`usuarios/${userId}/viajeActivo`).set({
+            ...viaje,
+            viajeId: viaje.key,
+            ubicacionPasajero,
+          });
+        }
+  
+        // Guardar el viaje aceptado en Ionic Storage para acceso sin conexión
+        await this.storage.set('viaje_activo', {
           ...viaje,
           viajeId: viaje.key,
           ubicacionPasajero,
         });
+  
+        console.log('Viaje aceptado guardado en Ionic Storage:', {
+          ...viaje,
+          viajeId: viaje.key,
+          ubicacionPasajero,
+        });
+  
+        // Notificar al conductor que el pasajero ha aceptado el viaje
+        const conductorId = viaje.conductorId;
+        await this.notificacionesService.notificarConductorPasajeroAceptaViaje(
+          viaje.key,
+          conductorId,
+          this.userEmail!
+        );
+  
+        // Redirigir al usuario a la página de selección de roles
+        this.router.navigate(['/role-selection']);
+      } catch (error) {
+        console.error('Error al aceptar el viaje:', error);
+        // Manejar errores
+        await this.presentToast('Hubo un problema al aceptar el viaje. Por favor, inténtalo nuevamente.');
       }
-
-      await this.storage.set('viaje_activo', { ...viaje, ubicacionPasajero });
-
-      const conductorId = viaje.conductorId;
-      await this.notificacionesService.notificarConductorPasajeroAceptaViaje(
-        viaje.key,
-        conductorId,
-        this.userEmail!
-      );
-
-      this.router.navigate(['/role-selection']);
+    } else {
+      // Manejar el caso en el que no se encuentre el correo del usuario
+      await this.presentToast('No se pudo aceptar el viaje. Asegúrate de estar autenticado.');
     }
   }
+  
+  // Método para mostrar mensajes al usuario
+  async presentToast(message: string) {
+    const toast = document.createElement('ion-toast');
+    toast.message = message;
+    toast.duration = 4000;
+    toast.position = 'bottom';
+    document.body.appendChild(toast);
+    return toast.present();
+  }
+  
 
   mostrarRutaEnMapa(rutaCoordenadas: [number, number][]) {
     (mapboxgl as any).accessToken = environment.accessToken;
