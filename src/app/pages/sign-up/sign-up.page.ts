@@ -78,7 +78,7 @@ export class SignUpPage {
         this.router.navigate(['/home']);
       } catch (error) {
         console.error('Error al registrar el usuario:', error);
-        this.presentToast('Hubo un error al registrar el usuario. Inténtalo nuevamente.');
+        this.presentToast('Se envio un correo de confirmacion por favor revisa tu correo.');
       }
     } else {
       this.presentToast('Por favor completa todos los campos correctamente.');
