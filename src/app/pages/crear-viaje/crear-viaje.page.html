@@ -12,7 +12,7 @@
 <ion-content color="dark">
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Detalles del Viaje</ion-card-title>
+      <ion-card-title></ion-card-title>
     </ion-card-header>
 
     <ion-card-content>
@@ -26,16 +26,15 @@
         ></ion-input>
       </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked"> Hora de salida</ion-label>
-          <ion-datetime 
-            [(ngModel)]="horaSalida"
-            placeholder="Selecciona una hora"
-            presentation="time"
-            display-format="HH:mm"
-            picker-format="HH:mm"
-            class="compact-datetime">
-          </ion-datetime>
+      <ion-item class="datetime-container">
+        <ion-label position="stacked">Hora de salida</ion-label>
+        <ion-datetime 
+          [(ngModel)]="horaSalida"
+          presentation="time"
+          display-format="HH:mm"
+          picker-format="HH:mm"
+          class="compact-datetime">
+        </ion-datetime>
       </ion-item>
       
       

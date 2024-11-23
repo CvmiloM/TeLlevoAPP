@@ -28,6 +28,65 @@ ion-content {
     margin-top: 20px;
   }
   
+  .datetime-container {
+    width: 100%; /* Asegura que el contenedor abarque el ancho completo */
+    --ion-item-background: transparent;
+    --ion-item-padding: 0;
+    --ion-item-border-color: transparent;
+  
+    ion-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+  
+    ion-datetime {
+      width: 100%; /* Ajusta el ancho al contenedor */
+      height: 50px; /* Ajusta la altura */
+      --background: #1e1e1e; /* Fondo del selector */
+      --color: #ffffff; /* Color del texto */
+      --border-radius: 8px; /* Bordes redondeados */
+      --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); /* Sombra */
+      padding: 0 10px; /* Espaciado interno */
+      font-size: 14px; /* Ajusta el tamaño del texto */
+      text-align: center; /* Centra el contenido */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    ion-datetime::part(content) {
+      width: 100%; /* Ajusta el contenido interno al 100% */
+    }
+  
+    ion-datetime::part(active) {
+      font-weight: bold; /* Estilo al elemento seleccionado */
+      color: rgb(72, 187, 233); /* Cambia el color del elemento activo */
+    }
+  
+    ion-datetime::part(column) ::slotted(ion-picker-column-option) {
+      display: block;
+      scroll-snap-align: center;
+      font-size: 14px; /* Tamaño del texto */
+      color: white; /* Color de los valores */
+      background: transparent; /* Fondo transparente */
+    }
+  
+    ion-datetime::part(column) ion-picker-column::part(active) {
+      font-weight: bold;
+      color: #1DB954; /* Verde para el elemento activo */
+    }
+  
+    /* Opciones del selector al estar seleccionadas */
+    ion-datetime::part(column) ::slotted(ion-picker-column-option.active) {
+      color: #1DB954; /* Cambia el color del texto activo a verde */
+      font-weight: bold; /* Negrita */
+    }
+  }
+
+ 
+  
   .status-message {
     margin: 10px 0;
     text-align: center;
