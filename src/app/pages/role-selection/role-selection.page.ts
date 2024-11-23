@@ -142,8 +142,11 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
     if (this.viajeActivo) {
       const viajeId = this.viajeActivo.viajeId;
       const conductorId = this.viajeActivo.conductorId;
+  
+      // Eliminar al pasajero de la lista de pasajeros del viaje en Firebase
       const pasajerosRef = this.db.list(`viajes/${viajeId}/pasajeros`);
       let pasajeroEliminado = false;
+  
       await pasajerosRef.query.once('value', (snapshot) => {
         snapshot.forEach((childSnapshot) => {
           const pasajeroData = childSnapshot.val();
@@ -155,6 +158,8 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
           return false;
         });
       });
+  
+      // Actualizar los asientos disponibles si se eliminó al pasajero
       if (pasajeroEliminado) {
         const viajeRef = this.db.object(`viajes/${viajeId}`);
         const pasajerosSnapshot = await pasajerosRef.query.once('value');
@@ -164,18 +169,35 @@ export class RoleSelectionPage implements OnInit, OnDestroy {
           asientosDisponibles: asientosTotales - numeroPasajerosActual,
         });
       }
-      await this.notificacionesService.notificarConductorPasajeroCancelaViaje(viajeId, conductorId, this.userEmail!);
+  
+      // Notificar al conductor que el pasajero canceló el viaje
+      await this.notificacionesService.notificarConductorPasajeroCancelaViaje(
+        viajeId,
+        conductorId,
+        this.userEmail!
+      );
+  
+      // Eliminar el viaje activo del usuario en Firebase
       const userId = (await this.afAuth.currentUser)?.uid;
       if (userId) {
         await this.db.object(`usuarios/${userId}/viajeActivo`).remove();
       }
-      const viajeActivoRef = this.db.object(`usuarios/${this.userId}/viajeActivo`);
-      await viajeActivoRef.remove();
+  
+      // Borrar la información del viaje guardado en Ionic Storage
       await this.storage.remove('viaje_activo');
+      console.log('Viaje guardado eliminado de Ionic Storage');
+  
+      // Actualizar las variables locales para reflejar los cambios en la vista
       this.viajeActivo = null;
-      await this.storage.remove('viaje_activo');
+      this.viajeGuardado = null;
+  
+      // Mostrar mensaje de confirmación
+      alert('Has cancelado el viaje correctamente.');
+    } else {
+      alert('No tienes un viaje activo para cancelar.');
     }
   }
+  
 
   selectConductor() {
     this.router.navigate(['/conductor']);
