@@ -21,6 +21,7 @@
         <p><strong>Destino:</strong> {{ viajeActivo.destino }}</p>
         <p><strong>Descripción:</strong> {{ viajeActivo.descripcion }}</p>
         <p><strong>Patente:</strong> {{ viajeActivo.patente }}</p>
+        <p><strong>Hora de salida:</strong> {{ viajeActivo.horaSalida }}</p>
         <p><strong>Costo:</strong> {{ viajeActivo.costo | currency }}</p>
         
       </ion-card-content>
@@ -56,6 +57,7 @@
       <ion-card-content>
         <p><strong>Descripción:</strong> {{ viajeGuardado.descripcion }}</p>
         <p><strong>Patente:</strong> {{ viajeGuardado.patente }}</p>
+        <p><strong>Hora de salida</strong>{{viajeGuardado.horaSalida}}</p>
         <p><strong>Costo:</strong> {{ viajeGuardado.costo | currency }}</p>
         <p><strong>Asientos Disponibles:</strong> {{ viajeGuardado.asientosDisponibles }}</p>
         <p><strong>Ubicación Inicial:</strong> Lat: {{ viajeGuardado.ubicacionInicial[1] }}, Lng: {{ viajeGuardado.ubicacionInicial[0] }}</p>

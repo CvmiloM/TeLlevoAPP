@@ -26,6 +26,19 @@
         ></ion-input>
       </ion-item>
 
+      <ion-item>
+        <ion-label position="stacked"> Hora de salida</ion-label>
+          <ion-datetime 
+            [(ngModel)]="horaSalida"
+            placeholder="Selecciona una hora"
+            presentation="time"
+            display-format="HH:mm"
+            picker-format="HH:mm"
+            class="compact-datetime">
+          </ion-datetime>
+      </ion-item>
+      
+      
       <!-- Lista de sugerencias de destino -->
       <div class="destino-input-container">
         <ion-item>

@@ -19,7 +19,8 @@ export class CrearViajePage implements OnInit, OnDestroy {
   descripcion: string = '';
   asientos: number | null = null;
   costo: number | null = null;
-  patente: string = ''; // Nueva propiedad para la patente
+  patente: string = ''; // Propiedad para la patente
+  horaSalida: string = ''; // Propiedad para la hora de salida
   ubicacionInicial: [number, number] = [-74.5, 40];
   destinoCoords: [number, number] | null = null;
   suggestions: any[] = [];
@@ -67,12 +68,15 @@ export class CrearViajePage implements OnInit, OnDestroy {
 
   loadUserExperience() {
     if (this.userId) {
-      this.db.object(`usuarios/${this.userId}/profile`).valueChanges().subscribe((profile: any) => {
-        if (profile) {
-          this.userExperience = profile.experience || 0;
-          this.userLevel = profile.level || 1;
-        }
-      });
+      this.db
+        .object(`usuarios/${this.userId}/profile`)
+        .valueChanges()
+        .subscribe((profile: any) => {
+          if (profile) {
+            this.userExperience = profile.experience || 0;
+            this.userLevel = profile.level || 1;
+          }
+        });
     }
   }
 
@@ -149,7 +153,6 @@ export class CrearViajePage implements OnInit, OnDestroy {
   }
 
   validarPatente(): boolean {
-    // Validar formato de patente chilena (AA-BB-11 o AA-11-BB)
     const regex = /^[A-Z]{2}-\d{2}-[A-Z]{2}$|^[A-Z]{2}-[A-Z]{2}-\d{2}$/;
     return regex.test(this.patente);
   }
@@ -160,7 +163,8 @@ export class CrearViajePage implements OnInit, OnDestroy {
       this.descripcion !== '' &&
       this.asientos !== null &&
       this.costo !== null &&
-      this.validarPatente()
+      this.validarPatente() &&
+      this.horaSalida !== ''
     );
   }
 
@@ -189,6 +193,11 @@ export class CrearViajePage implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.horaSalida === '') {
+      await this.mostrarAlerta('Por favor ingrese una hora de salida.');
+      return;
+    }
+
     if (this.isComplete() && this.userId) {
       const rutaCoordenadas = await this.dibujarRuta(this.destinoCoords!);
 
@@ -197,7 +206,8 @@ export class CrearViajePage implements OnInit, OnDestroy {
         descripcion: this.descripcion,
         asientos: this.asientos,
         costo: this.costo,
-        patente: this.patente, // Agregar patente
+        patente: this.patente,
+        horaSalida: this.horaSalida, // Agregar hora de salida
         ubicacionInicial: this.ubicacionInicial,
         destinoCoords: this.destinoCoords,
         asientosDisponibles: this.asientos,
@@ -206,18 +216,12 @@ export class CrearViajePage implements OnInit, OnDestroy {
         ruta: rutaCoordenadas,
       };
 
-      // Guardar en Firebase
       const viajeRef = this.db.list('viajes').push(viajeData);
       this.viajeId = viajeRef.key || '';
       await this.db.object(`viajes/${this.viajeId}`).update({ id: this.viajeId });
 
-      // Guardar en la ruta específica del usuario
-      await this.db.list(`usuarios/${this.userId}/viajes`).set(this.viajeId, viajeData);
-
-      // Guardar en Ionic Storage
       await this.guardarViajeLocal(viajeData);
 
-      // Actualizar experiencia y mostrar éxito
       this.updateExperience(5);
       await this.mostrarAlerta('Su viaje se ha creado correctamente.');
       this.router.navigate(['/conductor']);
